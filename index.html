@@ -335,6 +335,14 @@
             font-weight: bold;
             font-size: 1rem;
         }
+        #btn-comparar{
+            background-color: #384770;
+            color: rgb(255, 255, 255);
+            border: none;
+        }
+        #btn-comparar:hover{
+            background-color: #56658b;
+        }
     </style>
 </head>
 <body>
@@ -406,11 +414,11 @@
                 <div class="tab-pane fade show active" id="sub-jogos">
                     <!-- Barra ver/comparar apostas de outros (aparece após login) -->
                     <div id="ver-outros-bar" class="ver-outros-bar" style="display:none;">
-                        <span class="fw-semibold small">👁️ Ver apostas de:</span>
+                        <span class="fw-semibold small">Ver apostas de:</span>
                         <select id="select-outro-participante" class="form-select form-select-sm" style="max-width:210px;" onchange="trocarVisualizacaoApostas()">
                             <option value="">— Meus palpites —</option>
                         </select>
-                        <button class="btn btn-sm btn-warning text-dark fw-bold" id="btn-comparar" onclick="mostrarComparacao()" style="display:none;">⚖️ Comparar comigo</button>
+                        <button class="btn btn-sm btn-warning fw-bold" id="btn-comparar" onclick="mostrarComparacao()" style="display:none;">⚖️ Comparar comigo</button>
                         <button class="btn btn-sm btn-outline-secondary" id="btn-fechar-comparar" onclick="fecharComparacao()" style="display:none;">✕ Fechar comparação</button>
                     </div>
 
@@ -857,9 +865,9 @@ async function apiPost(url, data) {
 
     // ==================== PARTICIPANTES ====================
     const participantes = [
-        "Cesar", "Daniela", "Danilo", "David", "Diana", "Fábio", "Fernando", "Gustavo", "Hugo",
-        "Isabella", "Jane", "Kamila", "Luis", "Marcelo","Maria Eduarda",
-        "Natália", "Nayara", "Paola", "Pedro","Vinicius", "Yargo"
+        "César", "Daniela", "Danilo", "David", "Fábio", "Fernando", "Gustavo",
+        "Isabella", "Kamila", "Luis",
+        "Natália", "Nayara", "Pedro","Vinicius", "Yargo"
     ];
 
     // ==================== JOGOS OFICIAIS ====================
