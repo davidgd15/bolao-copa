@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolão Copa do Mundo 2026</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="bolao-img.png">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #bbbbbb 0%, #7e807f 100%); min-height: 100vh; }
+        .container { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 25px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h1 { font-weight: 700; color: #0e235e; text-align: center; margin-bottom: 20px; }
+        h3 { font-weight: 700; color: #0e235e; text-align: center; margin-bottom: 20px;}
+        .nav-tabs .nav-link { color: #0e235e; font-weight: 500; }
+        .nav-tabs .nav-link.active { background-color: #0e235e; color: white; }
+        .nav-tabs .nav-link:hover { border:0.5px solid #0e235e; transition: 0.6s ease;}
+        .btn-success { background-color: #0e235e; border: none; font-weight: bold; }
+        .btn-success:hover { background-color: #6d80ac; transition:  0.6s ease-in-out;}
+        table { font-size: 0.9rem; }
+        .table thead { background-color: #0e235e; color: white; }
+        .table td, .table th { vertical-align: middle; }
+        .placar-cell { width: 80px; text-align: center; font-weight: bold; }
+        .resultado-cell { width: 200px; text-align: center; }
+        .btn-salvar { background-color: #0e235e; border: none; font-weight: bold; color: rgb(255, 255, 255); }
+        .btn-salvar:hover { background-color: #6d80ac; }
+        .btn-editar { background-color: transparent; border: 1px solid #0e235e; font-weight: bold; color: #0e235e; }
+        .btn-editar:hover { background-color: #0e235e; color: white; }
+        .ranking-ouro { background-color: #ffd700 !important; font-weight: bold; }
+        .ranking-prata { background-color: #c0c0c0 !important; font-weight: bold; }
+        .ranking-bronze { background-color: #cd7f32 !important; font-weight: bold; }
+        .form-select:focus, .form-control:focus { border: 0.5px solid #0e235e; box-shadow: 0 0 0 0.5px #0e235e; }
+        .fi { margin-right: 5px; }
+        .jogo-travado { background-color: #f8f9fa; }
+        .ver-outros-bar { background: #f0f4ff; border: 1px solid #c7d4f5; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .comparar-wrapper { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 10px; padding: 14px; margin-top: 18px; }
+        .comparar-titulo { background: #1c2641; color: white; border-radius: 6px; padding: 7px 14px; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 1rem; }
+        .comparar-tabela { font-size: 0.82rem; }
+        .comparar-tabela td { padding: 4px 6px !important; vertical-align: middle; }
+        .bet-igual td { background: #fff !important; }
+        .bet-diferente td { background: #fff8e1 !important; }
+        .login-area { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 15px;}
+        .salvo-badge { background: #18742e; color: white; font-size: 12px; padding: 3px 8px; border-radius: 5px; margin-right: 5px; }
+        .bracket { display: flex; justify-content: space-around; flex-wrap: nowrap; overflow-x: auto; padding: 20px; font-size: 0.8rem; }
+        .round { display: flex; flex-direction: column; justify-content: space-around; margin: 0 10px; }
+        .match { border: 1px solid #0e235e; border-radius: 5px; background: #fff; margin: 5px 0; padding: 5px 10px; text-align: center; white-space: nowrap; }
+        .match-line { font-weight: bold; }
+        .data-cell { width: 70px; text-align: center; }
+        .toast-topo {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            z-index: 9999;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            opacity: 1;
+            transition: opacity 0.4s ease;
+        }
+        .bracket-wrapper {
+            position: relative;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .bracket-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .bracket-cols {
+            display: flex;
+            justify-content: space-around;
+            position: relative;
+            z-index: 2;
+        }
+        .round-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 180px;
+            padding: 0 10px;
+        }
+        .round-title {
+            background: #0e235e;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 6px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .pair-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-height: 100px;
+        }
+        .match-card {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 6px 8px;
+            text-align: center;
+            width: 155px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            margin: 8px auto;
+        }
+        .match-card:hover {
+            transform: scale(1.02);
+            border-color: #d4af37;
+        }
+        .match-num {
+            font-size: 0.65rem;
+            font-weight: bold;
+            background: #eaece9;
+            border-radius: 10px;
+            padding: 1px 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+        .team {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .team .fi {
+            font-size: 1.2em;
+            border-radius: 3px;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        .vs-text {
+            font-size: 0.7rem;
+            color: #888;
+            margin: 2px 0;
+        }
+        .placar {
+            font-weight: bold;
+            color: black;
+        }
+        .team.vencedor {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0e235e;
+        }
+        .btn-netzen {
+            background-color: #f0ac2f;
+            color: #712ad0;
+            border: 1px solid transparent;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.6s ease;
+        }
+        .btn-netzen:hover {
+            background-color: #712ad0;
+            color: #f0ac2f;
+            border: 1px solid #f0ac2f;
+        }
+        .aposta-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .aposta-placar {
+            width: 90px;
+            text-align: center;
+            font-size: 15px;
+            margin: 0 auto;
+        }
+        .placar-salvo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .aposta-saved {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        #tabela-apostas {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #tabela-apostas th:nth-child(1) { width: 40px; }
+        #tabela-apostas th:nth-child(2) { width: 30%; }
+        #tabela-apostas th:nth-child(3) { width: 20%; }
+        #tabela-apostas th:nth-child(4) { width: 30%; }
+        #tabela-apostas th:nth-child(5) { width: auto; }
+        #tabela-apostas td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .aposta-time {
+            justify-content: center;
+            display: flex;
+            align-items: center;
+        }
+        .aposta-time-vencedor {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0e235e;
+        }
+        .match-score {
+            font-weight: bold;
+            margin-left: 4px;
+            font-size: 0.9rem;
+        }
+        #modalPenaltis .modal-content {
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        #modalPenaltis .modal-header {
+            background: linear-gradient(135deg, #1e3c2f 0%, #2a5a3a 100%);
+            color: white;
+            border-bottom: none;
+            text-align: center;
+            padding: 20px;
+        }
+        #modalPenaltis .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        #modalPenaltis .modal-body {
+            background: #f4f7f4;
+            padding: 25px 20px;
+        }
+        .penalty-question {
+            font-weight: 600;
+            color: #0e235e;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        .penalty-choice-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #1e3c2f;
+            border-radius: 12px;
+            background: white;
+            color: #1e3c2f;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        .penalty-choice-btn:hover {
+            background: #1e3c2f;
+            color: white;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .penalty-choice-btn .fi {
+            font-size: 1.5em;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .penalty-icon {
+            font-size: 1.5rem;
+            margin: 0 5px;
+        }
+        .nav-pills .nav-link {
+            color: #0e235e;
+            font-weight: 500;
+            border-radius: 15px;
+            padding: 6px 16px;
+            margin-right: 8px;
+            border: 1px solid transparent;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0e235e;
+            color: white;
+            border-color: #0e235e;
+        }
+        .nav-pills .nav-link:hover {
+            border-color: #0e235e;
+        }
+        .estatisticas-card {
+            background: #f4f7f4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d9d1;
+        }
+        .estatisticas-card label {
+            font-weight: 600;
+            color: #0e235e;
+        }
+        .pontos-badge {
+            background: #0e235e;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .estatistica-acoes {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .estatistica-acoes .salvo-badge { padding: 2px 8px; }
+        .estatistica-acoes .btn-editar { padding: 2px 8px; }
+        .estatistica-acoes .btn-salvar { font-size: 0.75rem; padding: 4px 12px; }
+        .regra-dobro {
+            color: rgb(255, 0, 0);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .aviso {
+            color: rgb(0, 0, 0);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚽ BOLÃO COPA DO MUNDO 2026 ⚽</h1>
+    <h3>SANTORINI & NETZ</h3>
+
+    <div class="login-area" id="login-area">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <label class="form-label fw-bold mb-0">Participante:</label>
+                <select id="login-participante" class="form-select form-select-sm d-inline-block w-auto">
+                    <option value="">-- Selecione --</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <label class="form-label fw-bold mb-0">Senha:</label>
+                <input type="password" id="login-senha" class="form-control form-control-sm d-inline-block w-auto" placeholder="Senha">
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-sm btn-success" onclick="fazerLogin()">Entrar</button>
+            </div>
+            <div class="col-auto" id="info-logado" style="display:none;">
+                <span class="fw-bold text-success">Logado como <span id="nome-logado"></span></span>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="fazerLogout()">Sair</button>
+                <button id="btn-alterar-senha" class="btn btn-sm btn-outline-warning ms-2" style="display:none;" onclick="mostrarModalAlterarSenha()">🔑 Alterar senha</button>
+            </div>
+            <div class="col-auto ms-auto">
+                <a href="https://www.netzenergia.com.br/jornada-do-cliente" target="_blank" class="btn btn-sm btn-netzen ms-2">QUERO ENERGIA NETZ</a>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="jogos-tab" data-bs-toggle="tab" data-bs-target="#jogos" type="button">Jogos e Resultados</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="apostas-tab" data-bs-toggle="tab" data-bs-target="#apostas" type="button">Apostas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="chaveamento-tab" data-bs-toggle="tab" data-bs-target="#chaveamento" type="button">Chaveamento Jogos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="classificacao-tab" data-bs-toggle="tab" data-bs-target="#classificacao" type="button">Classificação</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="regras-tab" data-bs-toggle="tab" data-bs-target="#regras" type="button">Informações</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Aba Jogos -->
+        <div class="tab-pane fade show active" id="jogos">
+            <div class="table-responsive" id="jogos-container"></div>
+            <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" type="button" onclick="salvarResultadosReais()">Salvar</button>
+        </div>
+
+        <!-- Aba Apostas (com sub-abas) -->
+        <div class="tab-pane fade" id="apostas">
+            <ul class="nav nav-pills mb-3" id="subTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active" id="sub-jogos-tab" data-bs-toggle="pill" data-bs-target="#sub-jogos">Jogos</button></li>
+                <li class="nav-item"><button class="nav-link" id="sub-estatisticas-tab" data-bs-toggle="pill" data-bs-target="#sub-estatisticas">Estatísticas</button></li>
+                <li class="nav-item" id="sub-validar-li" style="display:none;"><button class="nav-link" id="sub-validar-tab" data-bs-toggle="pill" data-bs-target="#sub-validar">Validar Estatísticas</button></li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Sub-aba Jogos -->
+                <div class="tab-pane fade show active" id="sub-jogos">
+                    <!-- Barra ver/comparar apostas de outros (aparece após login) -->
+                    <div id="ver-outros-bar" class="ver-outros-bar" style="display:none;">
+                        <span class="fw-semibold small">👁️ Ver apostas de:</span>
+                        <select id="select-outro-participante" class="form-select form-select-sm" style="max-width:210px;" onchange="trocarVisualizacaoApostas()">
+                            <option value="">— Meus palpites —</option>
+                        </select>
+                        <button class="btn btn-sm btn-warning text-dark fw-bold" id="btn-comparar" onclick="mostrarComparacao()" style="display:none;">⚖️ Comparar comigo</button>
+                        <button class="btn btn-sm btn-outline-secondary" id="btn-fechar-comparar" onclick="fecharComparacao()" style="display:none;">✕ Fechar comparação</button>
+                    </div>
+
+                    <div class="row mb-3" id="salvar-todas-row" style="display: none;">
+                        <div class="col"><button class="btn btn-salvar" type="button" onclick="salvarTodasApostas()">Salvar todas as apostas</button></div>
+                    </div>
+                    <div class="table-responsive" id="apostas-container" style="display: none;">
+                        <table class="table table-striped table-hover" id="tabela-apostas"><tbody></tbody></table>
+                    </div>
+
+                    <!-- Painel de comparação lado a lado -->
+                    <div id="comparar-container" class="comparar-wrapper" style="display:none;">
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-6">
+                                <div class="comparar-titulo" id="comparar-titulo-eu">🙋 Meus palpites</div>
+                                <div class="table-responsive" id="comparar-tabela-eu"></div>
+                            </div>
+                            <div class="col-12 col-lg-6">
+                                <div class="comparar-titulo" id="comparar-titulo-outro">👤 —</div>
+                                <div class="table-responsive" id="comparar-tabela-outro"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-aba Estatísticas -->
+                <div class="tab-pane fade" id="sub-estatisticas">
+                    <div id="estatisticas-container" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Quem será o artilheiro da Copa?</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-artilheiro" placeholder="Nome do jogador" data-campo="artilheiro">
+                                    <div class="estatistica-acoes" id="acoes-artilheiro">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('artilheiro')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Quem dará mais assistências?</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-assistencias" placeholder="Nome do jogador" data-campo="assistencias">
+                                    <div class="estatistica-acoes" id="acoes-assistencias">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('assistencias')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Quem receberá mais cartões vermelhos?</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-cartao-vermelho" placeholder="Nome do jogador" data-campo="cartaoVermelho">
+                                    <div class="estatistica-acoes" id="acoes-cartaoVermelho">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('cartaoVermelho')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais cartões (amarelos + vermelhos)</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-selecao-cartoes" placeholder="Nome da seleção" data-campo="selecaoCartoes">
+                                    <div class="estatistica-acoes" id="acoes-selecaoCartoes">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('selecaoCartoes')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais escanteios</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-selecao-escanteios" placeholder="Nome da seleção" data-campo="selecaoEscanteios">
+                                    <div class="estatistica-acoes" id="acoes-selecaoEscanteios">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('selecaoEscanteios')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais gols marcados</label>
+                                    <input type="text" class="form-control campo-estatistica" id="aposta-selecao-gols" placeholder="Nome da seleção" data-campo="selecaoGols">
+                                    <div class="estatistica-acoes" id="acoes-selecaoGols">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('selecaoGols')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Quantos gols serão marcados na Copa inteira?</label>
+                                    <input type="number" class="form-control campo-estatistica" id="aposta-total-gols" placeholder="Ex: 171" data-campo="totalGols">
+                                    <div class="estatistica-acoes" id="acoes-totalGols">
+                                        <button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('totalGols')">Salvar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-salvar mt-3" type="button" onclick="salvarTodasEstatisticas()">Salvar todas as estatísticas</button>
+                    </div>
+                </div>
+
+                <!-- Sub-aba Validar Estatísticas (apenas David) -->
+                <div class="tab-pane fade" id="sub-validar">
+                    <div id="validar-container" style="display: none;">
+                        <h5 class="mb-3">🔒 Definir resultados oficiais das estatísticas</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Artilheiro oficial</label>
+                                    <input type="text" class="form-control" id="oficial-artilheiro" placeholder="Nome do jogador">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Mais assistências oficial</label>
+                                    <input type="text" class="form-control" id="oficial-assistencias" placeholder="Nome do jogador">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Mais cartões vermelhos oficial</label>
+                                    <input type="text" class="form-control" id="oficial-cartao-vermelho" placeholder="Nome do jogador">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais cartões oficial</label>
+                                    <input type="text" class="form-control" id="oficial-selecao-cartoes" placeholder="Nome da seleção">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais escanteios oficial</label>
+                                    <input type="text" class="form-control" id="oficial-selecao-escanteios" placeholder="Nome da seleção">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Seleção com mais gols oficial</label>
+                                    <input type="text" class="form-control" id="oficial-selecao-gols" placeholder="Nome da seleção">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="estatisticas-card">
+                                    <label>Total de gols oficial</label>
+                                    <input type="number" class="form-control" id="oficial-total-gols" placeholder="Ex: 171">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-salvar mt-3" type="button" onclick="salvarEstatisticasOficiais()">Salvar dados oficiais</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba Classificação -->
+        <div class="tab-pane fade" id="classificacao">
+            <div class="table-responsive" id="classificacao-container"></div>
+            <button id="btn-forcar-classificacao" class="btn btn-salvar mt-2" style="display: none;" onclick="atualizarClassificacao()">🔄 Forçar atualização</button>
+        </div>
+
+        <!-- Aba Chaveamento -->
+        <div class="tab-pane fade" id="chaveamento">
+            <div id="bracket-container"></div>
+        </div>
+
+        <!-- Aba Regras -->
+        <div class="tab-pane fade" id="regras">
+            <div class="rules-table">
+                <div class="row mt-3 justify-content-center" style="margin-bottom: 40px;">
+                    <div class="row mt-3 justify-content-center">
+                        <div class="col-auto">
+                            <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
+                                <div class="text-center">
+                                    <p class="mb-1 fw-bold" style="color: #0e235e;">💵 Valor da entrada</p>
+                                    <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ 50,00</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="card border-0 shadow-sm p-3" style="background: #f0f9f4; border-radius: 15px; width: 250px; height: 80px;">
+                                <div class="text-center">
+                                    <p class="mb-1 fw-bold" style="color: #0e235e;">🏆 Pote total estimado</p>
+                                    <p class="mb-0" style="font-size: 1.2rem; font-weight: 700; color: #2a5a3a;">R$ <span id="pote-total"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="text-center mb-3">📋 Pontuações</h4>
+                <table class="table table-bordered">
+                    <thead><tr><th>Critério</th><th>Pontos</th></tr></thead>
+                    <tbody>
+                        <tr><td>Acertar o placar exato</td><td>3 pontos</td></tr>
+                        <tr><td>Acertar o vencedor (ou empate)</td><td>1 ponto</td></tr>
+                        <tr><td>Acertar o campeão</td><td>20 pontos</td></tr>
+                        <tr><td>Artilheiro da Copa</td><td>20 pontos</td></tr>
+                        <tr><td>Mais assistências</td><td>15 pontos</td></tr>
+                        <tr><td>Mais cartões vermelhos (jogador)</td><td>15 pontos</td></tr>
+                        <tr><td>Seleção com mais cartões</td><td>10 pontos</td></tr>
+                        <tr><td>Seleção com mais escanteios</td><td>10 pontos</td></tr>
+                        <tr><td>Seleção com mais gols</td><td>10 pontos</td></tr>
+                        <tr><td>Total de gols na Copa</td><td>20 pontos</td></tr>
+                    </tbody>
+                </table>
+                <div class="mata-mata-rules">
+                <h4 class="text-center mt-4">💰 Premiação</h4>
+                <table class="table table-bordered">
+                    <thead><tr><th>Colocação</th><th>Valor</th></tr></thead>
+                    <tbody>
+                        <tr><td>1º lugar</td><td>R$800</td></tr>
+                        <tr><td>2º lugar</td><td>R$150</td></tr>
+                        <tr><td>3º lugar</td><td>R$50</td></tr>
+                        <tr><td>Último lugar</td><td>R$50</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="row mt-3 justify-content-center">
+                    <div class="card border-0 shadow-sm p-3" style="background: #fdffe4; border-radius: 15px; width: fit-content; height: fit-content; margin: 30px;">
+                        <div class="text-center">
+                            <p class="mb-1 fw-bold" style="color: #0e235e;">⚠️ AVISOS</p>
+                            <p class="text-center mt-3 regra-dobro">
+                                Se o César, Fábio, Nayara ou Daniela ganharem, o valor do prêmio será DOBRADO no bar!<br>
+                                R$800 vira R$1600 em bar – <u>só é válido para participantes do bolão.</u>
+                            </p>
+                            <p class="aviso">
+                                O bolão é fechado, não serão aceitas novas apostas ou alterações após o dia <u style="color: #0e235e;">10/06/2026</u>.<br>
+                                A pontuação é baseada exclusivamente nos resultados oficiais divulgados pela FIFA.<br>
+                            </p>
+                            <p class="aviso">
+                                O PIX deve ser enviado para a Kamila. Celular: <u style="color: #0e235e;">11960302238</u>. <br>
+                                Comprovante de pagamento deve ser enviado via Teams, para a mesma.<br>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mata-mata-rules" style="background: #f3f3f3; border-radius: 15px; padding: 15px;">
+                    <h4 class="text-center">📋 Regras mata-mata</h4>
+                    <p class="text-center mb-2"><strong>• Classificação:</strong> Avançam os dois primeiros de cada um dos 12 grupos (24 seleções) mais os <strong>8 melhores terceiros colocados</strong> entre todos os grupos.</p>
+                    <p class="text-center mb-2"><strong>• Confrontos:</strong> Os jogos do mata-mata 16 avos já são pré‑definidos pela FIFA, cruzando os primeiros colocados com terceiros de grupos específicos.</p>
+                    <p class="text-center mb-2"><strong>• Eliminação direta:</strong> Após a fase de grupos, quem vencer avança. Se houver empate no tempo normal, haverá prorrogação e, persistindo, disputa de pênaltis.</p>
+                    <p class="text-center mb-2"><strong>• Fases seguintes:</strong> Oitavas → Quartas → Semifinais → Final (e disputa de 3º lugar).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    
+</div>
+
+<!-- Modal genérico -->
+<div class="modal fade" id="modalMensagem" tabindex="-1" aria-labelledby="modalMensagemLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalMensagemLabel">Mensagem</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="modalMensagemBody">Texto da mensagem.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal alterar senha -->
+<div class="modal fade" id="modalAlterarSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <input type="password" id="nova-senha" class="form-control" placeholder="Nova senha">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="alterarSenha()">Salvar nova senha</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Pênaltis -->
+<div class="modal fade" id="modalPenaltis" tabindex="-1" aria-labelledby="modalPenaltisLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPenaltisLabel">⚽ Pênaltis!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="penalty-question">Empate no tempo normal!<br>Quem avança nos pênaltis?</p>
+                <button type="button" class="penalty-choice-btn" id="penalty-btn-casa">
+                    <span class="fi fi-br"></span> Brasil
+                </button>
+                <button type="button" class="penalty-choice-btn" id="penalty-btn-fora">
+                    <span class="fi fi-ar"></span> Argentina
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ==================== HELPERS DE API ====================
+   // async function apiGet(url) {
+   //     const res = await fetch(url);
+   //     if (!res.ok) throw new Error(await res.text());
+   //     return res.json();
+   // }
+
+   // async function apiPost(url, data) {
+   //     const res = await fetch(url, {
+   //         method: 'POST',
+     //       headers: { 'Content-Type': 'application/json' },
+       //     body: JSON.stringify(data)
+       // });
+       // if (!res.ok) throw new Error(await res.text());
+       // return res.json();
+   // }
+
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyD8tURxWsSbhOscbR-72MobtP1xtjEDcfw",
+      authDomain: "bolao-2-3e86e.firebaseapp.com",
+      projectId: "bolao-2-3e86e",
+      storageBucket: "bolao-2-3e86e.firebasestorage.app",
+      messagingSenderId: "1089208272640",
+      appId: "1:1089208272640:web:1024ebd92eac24cb00d5e5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+
+    // ==================== HELPERS DE FIRESTORE ====================
+async function fireGet(colecao, docId) {
+  const snap = await db.collection(colecao).doc(docId).get();
+  if (!snap.exists) return null;
+  return snap.data();
+}
+
+async function fireSet(colecao, docId, dados, merge = true) {
+  await db.collection(colecao).doc(docId).set(dados, { merge });
+}
+
+// --- Adaptações para manter compatibilidade com o restante do código ---
+async function apiGet(url) {
+  // Senhas
+  if (url === '/api/senhas') {
+    const snapshot = await db.collection('senhas').get();
+    const senhas = {};
+    snapshot.forEach(doc => { senhas[doc.id] = doc.data().senha; });
+    return senhas;
+  }
+
+  // Resultados oficiais
+  if (url === '/api/resultados') {
+    const doc = await fireGet('resultados', 'atual');
+    return doc ? doc.jogos || {} : {};
+  }
+
+  // Uma aposta específica (usada no login)
+  if (url.startsWith('/api/apostas/')) {
+    const nome = decodeURIComponent(url.split('/api/apostas/')[1]);
+    const doc = await fireGet('apostas', nome);
+    return doc || { palpites: {}, estatisticas: {} };
+  }
+
+  // ⬇️ NOVA ROTA: todas as apostas (para o seletor "Ver apostas de:")
+  if (url === '/api/apostas') {
+    const snapshot = await db.collection('apostas').get();
+    const all = {};
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      all[doc.id] = { palpites: data.palpites || {}, estatisticas: data.estatisticas || {} };
+    });
+    return all;
+  }
+
+  // Estatísticas oficiais
+  if (url === '/api/estatisticas-oficiais') {
+    const doc = await fireGet('estatisticasOficiais', 'geral');
+    return doc || {};
+  }
+
+  throw new Error('Rota não mapeada: ' + url);
+}
+
+
+async function apiPost(url, data) {
+  if (url.startsWith('/api/senhas/')) {
+    const nome = decodeURIComponent(url.split('/api/senhas/')[1]);
+    // data = { senha: '...' }
+    await fireSet('senhas', nome, data);
+    return { sucesso: true };
+  }
+
+  if (url === '/api/resultados') {
+    // data é um objeto com todos os resultados (chave idJogo -> {golsT1, golsT2, penaltis?})
+    await fireSet('resultados', 'atual', { jogos: data });
+    return { sucesso: true };
+  }
+
+  if (url.startsWith('/api/apostas/')) {
+    const nome = decodeURIComponent(url.split('/api/apostas/')[1]);
+    // data pode conter { palpites: {...}, estatisticas: {...} }
+    // ou apenas um dos dois (merge)
+    await fireSet('apostas', nome, data);
+    return { sucesso: true };
+  }
+
+  if (url === '/api/estatisticas-oficiais') {
+    await fireSet('estatisticasOficiais', 'geral', data);
+    return { sucesso: true };
+  }
+
+  if (url === '/api/pontuacao') {
+    // data é o array de classificação
+    await fireSet('pontuacao', 'atual', { classificacao: data });
+    return { sucesso: true };
+  }
+
+  throw new Error('Rota POST não mapeada: ' + url);
+}
+
+    // ==================== MAPEAMENTO DE BANDEIRAS ====================
+    const countryCodeMap = {
+        "México": "mx", "África do Sul": "za", "Coreia do Sul": "kr", "República Tcheca": "cz",
+        "Canadá": "ca", "Bósnia-Herzegovina": "ba", "Catar": "qa", "Suíça": "ch",
+        "Brasil": "br", "Marrocos": "ma", "Haiti": "ht", "Escócia": "gb-sct",
+        "Estados Unidos": "us", "Paraguai": "py", "Austrália": "au", "Turquia": "tr",
+        "Alemanha": "de", "Curaçao": "cw", "Costa do Marfim": "ci", "Equador": "ec",
+        "Holanda": "nl", "Japão": "jp", "Suécia": "se", "Tunísia": "tn",
+        "Bélgica": "be", "Egito": "eg", "Irã": "ir", "Nova Zelândia": "nz",
+        "Espanha": "es", "Cabo Verde": "cv", "Arábia Saudita": "sa", "Uruguai": "uy",
+        "França": "fr", "Senegal": "sn", "Noruega": "no", "Iraque": "iq",
+        "Argentina": "ar", "Argélia": "dz", "Áustria": "at", "Jordânia": "jo",
+        "Portugal": "pt", "RD Congo": "cd", "Uzbequistão": "uz", "Colômbia": "co",
+        "Inglaterra": "gb-eng", "Croácia": "hr", "Gana": "gh", "Panamá": "pa"
+    };
+    function flag(country) { const code = countryCodeMap[country]; return code ? `<span class="fi fi-${code}"></span>` : ''; }
+
+    // ==================== PARTICIPANTES ====================
+    const participantes = [
+        "Cesar", "Daniela", "Danilo", "David", "Diana", "Fábio", "Fernando", "Gustavo", "Hugo",
+        "Isabella", "Jane", "Kamila", "Luis", "Marcelo","Maria Eduarda",
+        "Natália", "Nayara", "Paola", "Pedro","Vinicius", "Yargo"
+    ];
+
+    // ==================== JOGOS OFICIAIS ====================
+    const jogos = [];
+    let id = 1;
+    function addJogo(fase, grupo, time1, time2) { jogos.push({ id: id++, fase, grupo, time1, time2 }); }
+    // Rodada 1
+    addJogo("Fase de Grupos", "A", "México", "África do Sul");
+    addJogo("Fase de Grupos", "A", "Coreia do Sul", "República Tcheca");
+    addJogo("Fase de Grupos", "B", "Canadá", "Bósnia-Herzegovina");
+    addJogo("Fase de Grupos", "D", "Estados Unidos", "Paraguai");
+    addJogo("Fase de Grupos", "D", "Austrália", "Turquia");
+    addJogo("Fase de Grupos", "B", "Catar", "Suíça");
+    addJogo("Fase de Grupos", "C", "Brasil", "Marrocos");
+    addJogo("Fase de Grupos", "C", "Haiti", "Escócia");
+    addJogo("Fase de Grupos", "E", "Alemanha", "Curaçao");
+    addJogo("Fase de Grupos", "F", "Holanda", "Japão");
+    addJogo("Fase de Grupos", "E", "Costa do Marfim", "Equador");
+    addJogo("Fase de Grupos", "F", "Suécia", "Tunísia");
+    addJogo("Fase de Grupos", "H", "Espanha", "Cabo Verde");
+    addJogo("Fase de Grupos", "G", "Bélgica", "Egito");
+    addJogo("Fase de Grupos", "H", "Arábia Saudita", "Uruguai");
+    addJogo("Fase de Grupos", "G", "Irã", "Nova Zelândia");
+    addJogo("Fase de Grupos", "J", "Áustria", "Jordânia");
+    addJogo("Fase de Grupos", "I", "França", "Senegal");
+    addJogo("Fase de Grupos", "I", "Iraque", "Noruega");
+    addJogo("Fase de Grupos", "J", "Argentina", "Argélia");
+    addJogo("Fase de Grupos", "K", "Portugal", "RD Congo");
+    addJogo("Fase de Grupos", "L", "Inglaterra", "Croácia");
+    addJogo("Fase de Grupos", "L", "Gana", "Panamá");
+    addJogo("Fase de Grupos", "K", "Uzbequistão", "Colômbia");
+    // Rodada 2
+    addJogo("Fase de Grupos", "A", "República Tcheca", "África do Sul");
+    addJogo("Fase de Grupos", "B", "Suíça", "Bósnia-Herzegovina");
+    addJogo("Fase de Grupos", "B", "Canadá", "Catar");
+    addJogo("Fase de Grupos", "A", "México", "Coreia do Sul");
+    addJogo("Fase de Grupos", "D", "Turquia", "Paraguai");
+    addJogo("Fase de Grupos", "D", "Estados Unidos", "Austrália");
+    addJogo("Fase de Grupos", "C", "Escócia", "Marrocos");
+    addJogo("Fase de Grupos", "C", "Brasil", "Haiti");
+    addJogo("Fase de Grupos", "F", "Tunísia", "Japão");
+    addJogo("Fase de Grupos", "F", "Holanda", "Suécia");
+    addJogo("Fase de Grupos", "E", "Alemanha", "Costa do Marfim");
+    addJogo("Fase de Grupos", "E", "Equador", "Curaçao");
+    addJogo("Fase de Grupos", "H", "Espanha", "Arábia Saudita");
+    addJogo("Fase de Grupos", "G", "Bélgica", "Irã");
+    addJogo("Fase de Grupos", "H", "Uruguai", "Cabo Verde");
+    addJogo("Fase de Grupos", "G", "Nova Zelândia", "Egito");
+    addJogo("Fase de Grupos", "J", "Jordânia", "Argélia");
+    addJogo("Fase de Grupos", "J", "Argentina", "Áustria");
+    addJogo("Fase de Grupos", "I", "França", "Iraque");
+    addJogo("Fase de Grupos", "I", "Noruega", "Senegal");
+    addJogo("Fase de Grupos", "K", "Portugal", "Uzbequistão");
+    addJogo("Fase de Grupos", "L", "Inglaterra", "Gana");
+    addJogo("Fase de Grupos", "L", "Panamá", "Croácia");
+    addJogo("Fase de Grupos", "K", "Colômbia", "RD Congo");
+    // Rodada 3
+    addJogo("Fase de Grupos", "B", "Suíça", "Canadá");
+    addJogo("Fase de Grupos", "B", "Bósnia-Herzegovina", "Catar");
+    addJogo("Fase de Grupos", "C", "Escócia", "Brasil");
+    addJogo("Fase de Grupos", "C", "Marrocos", "Haiti");
+    addJogo("Fase de Grupos", "A", "República Tcheca", "México");
+    addJogo("Fase de Grupos", "A", "África do Sul", "Coreia do Sul");
+    addJogo("Fase de Grupos", "E", "Curaçao", "Costa do Marfim");
+    addJogo("Fase de Grupos", "E", "Equador", "Alemanha");
+    addJogo("Fase de Grupos", "F", "Japão", "Suécia");
+    addJogo("Fase de Grupos", "F", "Tunísia", "Holanda");
+    addJogo("Fase de Grupos", "D", "Turquia", "Estados Unidos");
+    addJogo("Fase de Grupos", "D", "Paraguai", "Austrália");
+    addJogo("Fase de Grupos", "I", "Noruega", "França");
+    addJogo("Fase de Grupos", "I", "Senegal", "Iraque");
+    addJogo("Fase de Grupos", "H", "Cabo Verde", "Arábia Saudita");
+    addJogo("Fase de Grupos", "H", "Uruguai", "Espanha");
+    addJogo("Fase de Grupos", "G", "Egito", "Irã");
+    addJogo("Fase de Grupos", "G", "Nova Zelândia", "Bélgica");
+    addJogo("Fase de Grupos", "L", "Panamá", "Inglaterra");
+    addJogo("Fase de Grupos", "L", "Croácia", "Gana");
+    addJogo("Fase de Grupos", "K", "Colômbia", "Portugal");
+    addJogo("Fase de Grupos", "K", "RD Congo", "Uzbequistão");
+    addJogo("Fase de Grupos", "J", "Argélia", "Áustria");
+    addJogo("Fase de Grupos", "J", "Jordânia", "Argentina");
+
+    // Mata-mata
+    const mataMata = [
+        { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" }, { fase: "16 avos", jogo: 74, t1: "1E", t2: "3C/D/F" },
+        { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" }, { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
+        { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" }, { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
+        { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" }, { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
+        { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" }, { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
+        { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" }, { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
+        { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" }, { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
+        { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" }, { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
+        { fase: "Oitavas", jogo: 89, t1: "V74", t2: "V77" }, { fase: "Oitavas", jogo: 90, t1: "V73", t2: "V75" },
+        { fase: "Oitavas", jogo: 91, t1: "V76", t2: "V78" }, { fase: "Oitavas", jogo: 92, t1: "V79", t2: "V80" },
+        { fase: "Oitavas", jogo: 93, t1: "V83", t2: "V84" }, { fase: "Oitavas", jogo: 94, t1: "V81", t2: "V82" },
+        { fase: "Oitavas", jogo: 95, t1: "V86", t2: "V88" }, { fase: "Oitavas", jogo: 96, t1: "V85", t2: "V87" },
+        { fase: "Quartas", jogo: 97, t1: "V89", t2: "V90" }, { fase: "Quartas", jogo: 98, t1: "V93", t2: "V94" },
+        { fase: "Quartas", jogo: 99, t1: "V91", t2: "V92" }, { fase: "Quartas", jogo: 100, t1: "V95", t2: "V96" },
+        { fase: "Semifinal", jogo: 101, t1: "V97", t2: "V98" }, { fase: "Semifinal", jogo: 102, t1: "V99", t2: "V100" },
+        { fase: "3º Lugar", jogo: 103, t1: "Perdedor J101", t2: "Perdedor J102" },
+        { fase: "Final", jogo: 104, t1: "Vencedor J101", t2: "Vencedor J102" }
+    ];
+    mataMata.forEach(m => jogos.push({ id: m.jogo, fase: m.fase, grupo: "", time1: m.t1, time2: m.t2 }));
+
+    // ==================== ESTADO GLOBAL ====================
+    let resultadosAtuais = {};
+    
+    let apostasAtuais = {};
+    let senhasParticipantes = {};
+    let usuarioLogado = null;
+    let estatisticasOficiaisCache = {};
+
+    // ==================== FUNÇÕES AUXILIARES ====================
+    function resultadoTexto(golsT1, golsT2) {
+        if (golsT1 > golsT2) return 'Casa';
+        if (golsT1 < golsT2) return 'Fora';
+        return 'Empate';
+    }
+    function jogoPossuiResultadoOficial(id) {
+        const res = resultadosAtuais[id];
+        return res && typeof res.golsT1 === 'number' && typeof res.golsT2 === 'number';
+    }
+    function getResultadoDisplay(jogo, placarStr) {
+        if (!placarStr) return '';
+        const partes = placarStr.split('-');
+        if (partes.length !== 2) return '';
+        const gT1 = parseInt(partes[0]), gT2 = parseInt(partes[1]);
+        if (isNaN(gT1) || isNaN(gT2)) return '';
+        if (gT1 > gT2) return `${flag(jogo.time1)} ${jogo.time1}`;
+        if (gT1 < gT2) return `${flag(jogo.time2)} ${jogo.time2}`;
+        return 'Empate';
+    }
+    function atualizarBotoesAdmin() {
+        const isAdmin = (usuarioLogado === "David");
+        document.getElementById('btn-forcar-salvar').style.display = isAdmin ? 'inline-block' : 'none';
+        document.getElementById('btn-forcar-classificacao').style.display = isAdmin ? 'inline-block' : 'none';
+        document.getElementById('sub-validar-li').style.display = isAdmin ? 'list-item' : 'none';
+    }
+
+    function vencedorReal(jogoId) {
+        const res = resultadosAtuais[jogoId];
+        if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') return null;
+        const g1 = res.golsT1, g2 = res.golsT2;
+        if (g1 > g2) return 'Casa';
+        if (g1 < g2) return 'Fora';
+        return res.penaltis || null;
+    }
+
+    function podeEditarAgora() {
+        const hoje = new Date();
+        // Prazo: até o final de 11/06/2026 no horário de Brasília (UTC-3 = 03:00 UTC do dia 12)
+        return hoje < new Date('2026-06-12T03:00:00Z');
+    }
+
+    // ==================== MODAIS ====================
+    function mostrarToastNoTopo(mensagem) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-topo';
+        toast.textContent = mensagem;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300); }, 1500);
+    }
+
+    function mostrarModal(titulo, mensagem, tipo = 'success') {
+        const modal = new bootstrap.Modal(document.getElementById('modalMensagem'));
+        document.getElementById('modalMensagemLabel').textContent = titulo;
+        document.getElementById('modalMensagemBody').textContent = mensagem;
+        const header = document.querySelector('#modalMensagem .modal-header');
+        header.className = `modal-header ${tipo === 'erro' ? 'bg-danger' : 'bg-success'} text-white`;
+        modal.show();
+    }
+
+    function mostrarModalAlterarSenha() {
+        document.getElementById('nova-senha').value = '';
+        new bootstrap.Modal(document.getElementById('modalAlterarSenha')).show();
+    }
+
+    async function alterarSenha() {
+        const novaSenha = document.getElementById('nova-senha').value.trim();
+        if (!novaSenha) { mostrarModal('Atenção', 'Digite uma nova senha.', 'erro'); return; }
+        try {
+            await apiPost(`/api/senhas/${encodeURIComponent(usuarioLogado)}`, { senha: novaSenha });
+            senhasParticipantes[usuarioLogado] = novaSenha;
+            bootstrap.Modal.getInstance(document.getElementById('modalAlterarSenha')).hide();
+            document.getElementById('btn-alterar-senha').style.display = 'none';
+            mostrarModal('Sucesso', 'Senha alterada com sucesso!');
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao alterar senha.', 'erro'); }
+    }
+
+    // ==================== LOGIN ====================
+    async function carregarSenhas() {
+        try {
+            senhasParticipantes = await apiGet('/api/senhas');
+        } catch (e) { console.error('Erro ao carregar senhas:', e); }
+    }
+
+    async function fazerLogin() {
+        const nome = document.getElementById('login-participante').value;
+        const senha = document.getElementById('login-senha').value;
+        if (!nome || !senha) { mostrarModal('Atenção', 'Preencha nome e senha.', 'erro'); return; }
+        await carregarSenhas();
+        if (senhasParticipantes[nome] === senha) {
+            usuarioLogado = nome;
+            document.getElementById('info-logado').style.display = 'block';
+            document.getElementById('nome-logado').textContent = nome;
+            document.getElementById('login-participante').disabled = true;
+            document.getElementById('login-senha').disabled = true;
+            document.querySelector('#login-area button.btn-success').style.display = 'none';
+            document.getElementById('btn-alterar-senha').style.display = (senha === 'copa2026') ? 'inline-block' : 'none';
+
+            try {
+                const userData = await apiGet(`/api/apostas/${encodeURIComponent(usuarioLogado)}`);
+                apostasAtuais[usuarioLogado] = {
+                    ...(userData.palpites || {}),
+                    estatisticas: userData.estatisticas || {}
+                };
+            } catch (e) {
+                apostasAtuais[usuarioLogado] = {};
+            }
+
+            carregarApostasProprio();
+            carregarEstatisticasProprio();
+            atualizarBotoesAdmin();
+            if (usuarioLogado === "David") carregarDadosOficiaisValidacao();
+        } else {
+            mostrarModal('Erro', 'Senha incorreta!', 'erro');
+        }
+    }
+
+    function fazerLogout() {
+        usuarioLogado = null;
+        document.getElementById('info-logado').style.display = 'none';
+        document.getElementById('login-participante').disabled = false;
+        document.getElementById('login-senha').disabled = false;
+        document.querySelector('#login-area button.btn-success').style.display = 'inline-block';
+        document.getElementById('login-senha').value = '';
+        document.getElementById('apostas-container').style.display = 'none';
+        document.getElementById('salvar-todas-row').style.display = 'none';
+        document.getElementById('estatisticas-container').style.display = 'none';
+        document.getElementById('validar-container').style.display = 'none';
+        document.getElementById('ver-outros-bar').style.display = 'none';
+        document.getElementById('comparar-container').style.display = 'none';
+        document.getElementById('select-outro-participante').value = '';
+        document.getElementById('btn-comparar').style.display = 'none';
+        document.getElementById('btn-fechar-comparar').style.display = 'none';
+        atualizarBotoesAdmin();
+    }
+
+    // ==================== FUNÇÕES DINÂMICAS (GRUPOS, TERCEIROS, VENCEDORES) ====================
+    function calcularEstatisticasGrupos(palpitesParticipante) {
+        const grupos = {
+            "A": ["México", "África do Sul", "Coreia do Sul", "República Tcheca"],
+            "B": ["Canadá", "Bósnia-Herzegovina", "Catar", "Suíça"],
+            "C": ["Brasil", "Marrocos", "Haiti", "Escócia"],
+            "D": ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+            "E": ["Alemanha", "Curaçao", "Costa do Marfim", "Equador"],
+            "F": ["Holanda", "Japão", "Suécia", "Tunísia"],
+            "G": ["Bélgica", "Egito", "Irã", "Nova Zelândia"],
+            "H": ["Espanha", "Cabo Verde", "Arábia Saudita", "Uruguai"],
+            "I": ["França", "Senegal", "Iraque", "Noruega"],
+            "J": ["Argentina", "Argélia", "Áustria", "Jordânia"],
+            "K": ["Portugal", "RD Congo", "Uzbequistão", "Colômbia"],
+            "L": ["Inglaterra", "Croácia", "Gana", "Panamá"]
+        };
+        const stats = {};
+        for (const [letra, times] of Object.entries(grupos)) {
+            stats[letra] = {};
+            times.forEach(t => stats[letra][t] = { pts: 0, sg: 0, gs: 0 });
+            const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === "Fase de Grupos");
+            jogosGrupo.forEach(jogo => {
+                const bet = palpitesParticipante[jogo.id];
+                if (!bet || !bet.placar || !bet.resultado) return;
+                const [g1, g2] = bet.placar.split('-').map(Number);
+                if (isNaN(g1) || isNaN(g2)) return;
+                stats[letra][jogo.time1].gs += g1;
+                stats[letra][jogo.time2].gs += g2;
+                stats[letra][jogo.time1].sg += (g1 - g2);
+                stats[letra][jogo.time2].sg += (g2 - g1);
+                if (bet.resultado === 'Casa') stats[letra][jogo.time1].pts += 3;
+                else if (bet.resultado === 'Fora') stats[letra][jogo.time2].pts += 3;
+                else { stats[letra][jogo.time1].pts += 1; stats[letra][jogo.time2].pts += 1; }
+            });
+        }
+        return stats;
+    }
+
+    function atualizarJogosMataMataComResultadosReais() {
+        const todosGruposFinalizados = jogos
+            .filter(j => j.fase === "Fase de Grupos")
+            .every(j => jogoPossuiResultadoOficial(j.id));
+        if (!todosGruposFinalizados) return;
+        if (window.__mataMataAtualizado) return;
+
+        const resultadosOficiais = {};
+        for (const j of jogos) {
+            if (resultadosAtuais[j.id]) {
+                resultadosOficiais[j.id] = {
+                    placar: `${resultadosAtuais[j.id].golsT1}-${resultadosAtuais[j.id].golsT2}`,
+                    resultado: resultadoTexto(resultadosAtuais[j.id].golsT1, resultadosAtuais[j.id].golsT2)
+                };
+            }
+        }
+        const classificacaoOficial = calcularGrupos(resultadosOficiais);
+        const statsOficiais = calcularEstatisticasGrupos(resultadosOficiais);
+
+        for (const jogo of jogos) {
+            if (jogo.fase === "Fase de Grupos") continue;
+            const t1 = resolverPlaceholder(jogo.time1, classificacaoOficial, statsOficiais, {});
+            const t2 = resolverPlaceholder(jogo.time2, classificacaoOficial, statsOficiais, {});
+            jogo.time1 = t1.replace(/<[^>]*>/g, '').trim();
+            jogo.time2 = t2.replace(/<[^>]*>/g, '').trim();
+        }
+        window.__mataMataAtualizado = true;
+        renderizarTabelaJogos();
+    }
+
+    const vagasTerceiros = [
+        { placeholder: "3C/D/F", grupos: ['C','D','F'] },
+        { placeholder: "3C/D/F/G/H", grupos: ['C','D','F','G','H'] },
+        { placeholder: "3C/E/F/H/I", grupos: ['C','E','F','H','I'] },
+        { placeholder: "3E/H/I/J/K", grupos: ['E','H','I','J','K'] },
+        { placeholder: "3B/E/F/I/J", grupos: ['B','E','F','I','J'] },
+        { placeholder: "3A/E/H/I/J", grupos: ['A','E','H','I','J'] },
+        { placeholder: "3E/F/G/I/J", grupos: ['E','F','G','I','J'] },
+        { placeholder: "3D/E/I/J/L", grupos: ['D','E','I','J','L'] }
+    ];
+
+    function getTerceiroDoGrupo(letra, statsGrupos) {
+        const times = Object.entries(statsGrupos[letra] || {});
+        if (times.length < 3) return null;
+        const ordenados = times.sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs);
+        return { time: ordenados[2][0], stats: ordenados[2][1] };
+    }
+
+    function atribuirTerceiros(statsGrupos) {
+        const todosTerceiros = [];
+        for (const letra of 'ABCDEFGHIJKL') {
+            const terc = getTerceiroDoGrupo(letra, statsGrupos);
+            if (terc) todosTerceiros.push({ grupo: letra, time: terc.time, stats: terc.stats });
+        }
+        todosTerceiros.sort((a, b) => b.stats.pts - a.stats.pts || b.stats.sg - a.stats.sg || b.stats.gs - a.stats.gs);
+        const classificados = todosTerceiros.slice(0, 8);
+        const vagas = vagasTerceiros.slice();
+        const atribuicao = {};
+        const alocar = (idx, disponiveis) => {
+            if (idx === vagas.length) return true;
+            const vaga = vagas[idx];
+            for (let i = 0; i < disponiveis.length; i++) {
+                if (vaga.grupos.includes(disponiveis[i].grupo)) {
+                    const novoDisponiveis = [...disponiveis];
+                    const escolhido = novoDisponiveis.splice(i, 1)[0];
+                    if (alocar(idx + 1, novoDisponiveis)) {
+                        atribuicao[vaga.placeholder] = escolhido.time;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+        if (alocar(0, classificados)) return atribuicao;
+        else {
+            const fallback = {};
+            const disponiveis = [...classificados];
+            vagas.forEach(vaga => { fallback[vaga.placeholder] = disponiveis.length ? disponiveis.shift().time : vaga.placeholder; });
+            return fallback;
+        }
+    }
+
+    function vencedorJogo(jogoId, bets) {
+        const bet = bets[jogoId];
+        if (!bet || !bet.resultado) return null;
+        const jogo = jogos.find(j => j.id === jogoId);
+        if (!jogo) return null;
+        if (bet.resultado === 'Casa') return jogo.time1;
+        if (bet.resultado === 'Fora') return jogo.time2;
+        if (bet.resultado === 'Empate' && bet.penaltis) {
+            return bet.penaltis === 'Casa' ? jogo.time1 : jogo.time2;
+        }
+        return null;
+    }
+
+    // Resolve placeholder to raw team name (no flag emoji) — used for scoring comparison
+    function resolverTimeRaw(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros) {
+        if (!texto) return '';
+        if (countryCodeMap[texto]) return texto;
+        if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) return atribuicaoTerceiros[texto];
+        const simples = texto.match(/^(\d)([A-Z])$/);
+        if (simples) {
+            const pos = parseInt(simples[1]) - 1;
+            const grupo = simples[2];
+            return (classificacao[grupo] && classificacao[grupo][pos]) || texto;
+        }
+        const terc = texto.match(/^3([A-Z\/]+)$/);
+        if (terc) {
+            if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) return atribuicaoTerceiros[texto];
+            const gruposList = terc[1].split('/');
+            return getTerceiroColocado(gruposList, statsGrupos) || texto;
+        }
+        const vMatch = texto.match(/^V(?:encedor\s+J?)?(\d+)$/i);
+        if (vMatch) {
+            const jogoId = parseInt(vMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) return resolverTimeRaw(venc, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+            return texto;
+        }
+        const pMatch = texto.match(/^Perdedor\s+J(\d+)$/i);
+        if (pMatch) {
+            const jogoId = parseInt(pMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) {
+                const jogo = jogos.find(j => j.id === jogoId);
+                if (jogo) {
+                    const perdedor = (venc === jogo.time1) ? jogo.time2 : jogo.time1;
+                    return resolverTimeRaw(perdedor, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+                }
+            }
+            return texto;
+        }
+        return texto;
+    }
+
+    function resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros = null) {
+        if (countryCodeMap[texto]) return `${flag(texto)} ${texto}`;
+        if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+            const time = atribuicaoTerceiros[texto];
+            return `${flag(time)} ${time}`;
+        }
+        const simples = texto.match(/^(\d)([A-Z])$/);
+        if (simples) {
+            const pos = parseInt(simples[1]) - 1;
+            const grupo = simples[2];
+            if (classificacao[grupo] && classificacao[grupo][pos]) {
+                const time = classificacao[grupo][pos];
+                return `${flag(time)} ${time}`;
+            }
+            return texto;
+        }
+        const terc = texto.match(/^3([A-Z\/]+)$/);
+        if (terc) {
+            if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+                const time = atribuicaoTerceiros[texto];
+                return `${flag(time)} ${time}`;
+            }
+            const gruposList = terc[1].split('/');
+            const time = getTerceiroColocado(gruposList, statsGrupos);
+            if (time) return `${flag(time)} ${time}`;
+            return texto;
+        }
+        const vMatch = texto.match(/^V(?:encedor\s+J?)?(\d+)$/i);
+        if (vMatch) {
+            const jogoId = parseInt(vMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) return resolverPlaceholder(venc, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+            return `Vencedor J${jogoId}`;
+        }
+        const pMatch = texto.match(/^Perdedor\s+J(\d+)$/i);
+        if (pMatch) {
+            const jogoId = parseInt(pMatch[1]);
+            const venc = vencedorJogo(jogoId, bets);
+            if (venc) {
+                const jogo = jogos.find(j => j.id === jogoId);
+                if (jogo) {
+                    const perdedor = (venc === jogo.time1) ? jogo.time2 : jogo.time1;
+                    return resolverPlaceholder(perdedor, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+                }
+            }
+            return `Perdedor J${jogoId}`;
+        }
+        return texto;
+    }
+
+    function getTerceiroColocado(gruposList, statsGrupos) {
+        let melhor = null, melhorStats = null;
+        gruposList.forEach(letra => {
+            const times = Object.entries(statsGrupos[letra] || {});
+            const ordenados = times.sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs);
+            if (ordenados.length >= 3) {
+                const [time, stat] = ordenados[2];
+                if (!melhor || stat.pts > melhorStats.pts ||
+                    (stat.pts === melhorStats.pts && stat.sg > melhorStats.sg) ||
+                    (stat.pts === melhorStats.pts && stat.sg === melhorStats.sg && stat.gs > melhorStats.gs)) {
+                    melhor = time;
+                    melhorStats = stat;
+                }
+            }
+        });
+        return melhor;
+    }
+
+    // ==================== APOSTAS ====================
+    function calcularGrupos(palpitesParticipante) {
+        const grupos = {
+            "A": ["México", "África do Sul", "Coreia do Sul", "República Tcheca"],
+            "B": ["Canadá", "Bósnia-Herzegovina", "Catar", "Suíça"],
+            "C": ["Brasil", "Marrocos", "Haiti", "Escócia"],
+            "D": ["Estados Unidos", "Paraguai", "Austrália", "Turquia"],
+            "E": ["Alemanha", "Curaçao", "Costa do Marfim", "Equador"],
+            "F": ["Holanda", "Japão", "Suécia", "Tunísia"],
+            "G": ["Bélgica", "Egito", "Irã", "Nova Zelândia"],
+            "H": ["Espanha", "Cabo Verde", "Arábia Saudita", "Uruguai"],
+            "I": ["França", "Senegal", "Iraque", "Noruega"],
+            "J": ["Argentina", "Argélia", "Áustria", "Jordânia"],
+            "K": ["Portugal", "RD Congo", "Uzbequistão", "Colômbia"],
+            "L": ["Inglaterra", "Croácia", "Gana", "Panamá"]
+        };
+        const resultado = {};
+        for (const [letra, times] of Object.entries(grupos)) {
+            const stats = {};
+            times.forEach(t => stats[t] = { pts: 0, sg: 0, gs: 0 });
+            const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === "Fase de Grupos");
+            jogosGrupo.forEach(jogo => {
+                const bet = palpitesParticipante[jogo.id];
+                if (!bet || !bet.placar || !bet.resultado) return;
+                const [g1, g2] = bet.placar.split('-').map(Number);
+                if (isNaN(g1) || isNaN(g2)) return;
+                stats[jogo.time1].gs += g1;
+                stats[jogo.time2].gs += g2;
+                stats[jogo.time1].sg += (g1 - g2);
+                stats[jogo.time2].sg += (g2 - g1);
+                if (bet.resultado === 'Casa') stats[jogo.time1].pts += 3;
+                else if (bet.resultado === 'Fora') stats[jogo.time2].pts += 3;
+                else { stats[jogo.time1].pts += 1; stats[jogo.time2].pts += 1; }
+            });
+            const classificados = Object.entries(stats)
+                .sort(([,a], [,b]) => b.pts - a.pts || b.sg - a.sg || b.gs - a.gs)
+                .map(([time]) => time);
+            resultado[letra] = classificados;
+        }
+        return resultado;
+    }
+
+    // ==================== VER/COMPARAR APOSTAS DE OUTROS ====================
+
+    function popularSeletorParticipantes() {
+        const sel = document.getElementById('select-outro-participante');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— Meus palpites —</option>';
+        participantes
+            .filter(p => p !== usuarioLogado)
+            .sort((a, b) => a.localeCompare(b))
+            .forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                sel.appendChild(opt);
+            });
+    }
+
+    function trocarVisualizacaoApostas() {
+        const outro = document.getElementById('select-outro-participante').value;
+        fecharComparacao();
+        document.getElementById('apostas-container').style.display = 'block';
+        if (outro) {
+            document.getElementById('btn-comparar').style.display = 'inline-block';
+            document.getElementById('salvar-todas-row').style.display = 'none';
+            renderizarApostasLeitura(outro, 'tabela-apostas');
+        } else {
+            document.getElementById('btn-comparar').style.display = 'none';
+            carregarApostasProprio();
+        }
+    }
+
+    function _construirTbodyApostas(nome, tbody) {
+        const bets = apostasAtuais[nome] || {};
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+
+        const fasesGrupos = [
+            { titulo: 'FASE DE GRUPOS', subgrupos: true },
+            { titulo: 'MATA-MATA - 16 AVOS', filtro: j => j.fase === '16 avos' },
+            { titulo: 'MATA-MATA - Oitavas', filtro: j => j.fase === 'Oitavas' },
+            { titulo: 'MATA-MATA - Quartas', filtro: j => j.fase === 'Quartas' },
+            { titulo: 'Semifinal', filtro: j => j.fase === 'Semifinal' },
+            { titulo: 'Disputa de 3º lugar', filtro: j => j.fase === '3º Lugar' },
+            { titulo: 'FINAL', filtro: j => j.fase === 'Final' }
+        ];
+        const gruposLetras = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+        fasesGrupos.forEach(faseInfo => {
+            if (faseInfo.titulo === 'FASE DE GRUPOS') {
+                gruposLetras.forEach(letra => {
+                    const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === 'Fase de Grupos');
+                    if (jogosGrupo.length === 0) return;
+                    const trG = document.createElement('tr');
+                    trG.innerHTML = `<td colspan="5" style="background:#1c2641;color:white;font-weight:bold;border-radius:5px;">GRUPO ${letra}</td>`;
+                    tbody.appendChild(trG);
+                    jogosGrupo.forEach(j => tbody.appendChild(criarLinhaJogoVisualizar(j, bets, classificacao, statsGrupos, atribuicaoTerceiros)));
+                });
+            } else {
+                const jogosFase = jogos.filter(faseInfo.filtro);
+                if (jogosFase.length === 0) return;
+                const trF = document.createElement('tr');
+                trF.innerHTML = `<td colspan="5" style="background:#1c2641;color:white;font-weight:bold;border-radius:5px;">${faseInfo.titulo}</td>`;
+                tbody.appendChild(trF);
+                jogosFase.forEach(j => tbody.appendChild(criarLinhaJogoVisualizar(j, bets, classificacao, statsGrupos, atribuicaoTerceiros)));
+            }
+        });
+    }
+
+    function renderizarApostasLeitura(nome, tabelaId) {
+        const tbody = document.querySelector(`#${tabelaId} tbody`);
+        tbody.innerHTML = '';
+        _construirTbodyApostas(nome, tbody);
+    }
+
+    function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribuicaoTerceiros) {
+        const bet = bets[jogo.id] || {};
+        const tr = document.createElement('tr');
+
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        const placar = bet.placar || '—';
+        const casaVence = bet.resultado === 'Casa' || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+        const foraVence = bet.resultado === 'Fora' || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
+
+        const statusIcon = bet.salvo
+            ? '<span style="color:#18742e;font-size:0.85rem;">✅</span>'
+            : '<span style="color:#ccc;font-size:0.85rem;">—</span>';
+
+        tr.innerHTML = `
+            <td style="color:#888;font-size:0.8rem;">${jogo.id}</td>
+            <td><span class="aposta-time ${casaVence ? 'aposta-time-vencedor' : ''}">${nomeTime1}</span></td>
+            <td><span class="placar-salvo">${placar}</span></td>
+            <td><span class="aposta-time ${foraVence ? 'aposta-time-vencedor' : ''}">${nomeTime2}</span></td>
+            <td>${statusIcon}</td>`;
+        return tr;
+    }
+
+    function mostrarComparacao() {
+        const outro = document.getElementById('select-outro-participante').value;
+        if (!outro || !usuarioLogado) return;
+
+        document.getElementById('comparar-container').style.display = 'block';
+        document.getElementById('btn-fechar-comparar').style.display = 'inline-block';
+        document.getElementById('comparar-titulo-eu').textContent = `🙋 ${usuarioLogado}`;
+        document.getElementById('comparar-titulo-outro').textContent = `👤 ${outro}`;
+
+        const betsEu = apostasAtuais[usuarioLogado] || {};
+        const betsOutro = apostasAtuais[outro] || {};
+
+        // Build two tables side by side
+        const containerEu = document.getElementById('comparar-tabela-eu');
+        const containerOutro = document.getElementById('comparar-tabela-outro');
+        containerEu.innerHTML = '';
+        containerOutro.innerHTML = '';
+
+        const tabelaEu = document.createElement('table');
+        tabelaEu.className = 'table table-sm table-striped comparar-tabela';
+        const tbodyEu = document.createElement('tbody');
+        tabelaEu.appendChild(tbodyEu);
+        containerEu.appendChild(tabelaEu);
+
+        const tabelaOutro = document.createElement('table');
+        tabelaOutro.className = 'table table-sm table-striped comparar-tabela';
+        const tbodyOutro = document.createElement('tbody');
+        tabelaOutro.appendChild(tbodyOutro);
+        containerOutro.appendChild(tabelaOutro);
+
+        _construirTbodyApostasComparacao(usuarioLogado, betsEu, tbodyEu, betsOutro);
+        _construirTbodyApostasComparacao(outro, betsOutro, tbodyOutro, betsEu);
+
+        document.getElementById('comparar-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function _construirTbodyApostasComparacao(nome, bets, tbody, betsOutro) {
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+
+        const fasesGrupos = [
+            { titulo: 'FASE DE GRUPOS', subgrupos: true },
+            { titulo: '16 avos', filtro: j => j.fase === '16 avos' },
+            { titulo: 'Oitavas', filtro: j => j.fase === 'Oitavas' },
+            { titulo: 'Quartas', filtro: j => j.fase === 'Quartas' },
+            { titulo: 'Semifinal', filtro: j => j.fase === 'Semifinal' },
+            { titulo: '3º Lugar', filtro: j => j.fase === '3º Lugar' },
+            { titulo: 'Final', filtro: j => j.fase === 'Final' }
+        ];
+        const gruposLetras = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+        fasesGrupos.forEach(faseInfo => {
+            if (faseInfo.titulo === 'FASE DE GRUPOS') {
+                gruposLetras.forEach(letra => {
+                    const jogosGrupo = jogos.filter(j => j.grupo === letra && j.fase === 'Fase de Grupos');
+                    if (jogosGrupo.length === 0) return;
+                    const trG = document.createElement('tr');
+                    trG.innerHTML = `<td colspan="4" style="background:#1c2641;color:white;font-weight:bold;border-radius:4px;font-size:0.8rem;padding:4px 8px;">Grupo ${letra}</td>`;
+                    tbody.appendChild(trG);
+                    jogosGrupo.forEach(j => tbody.appendChild(_linhaComparacao(j, bets, betsOutro, classificacao, statsGrupos, atribuicaoTerceiros)));
+                });
+            } else {
+                const jogosFase = jogos.filter(faseInfo.filtro);
+                if (jogosFase.length === 0) return;
+                const trF = document.createElement('tr');
+                trF.innerHTML = `<td colspan="4" style="background:#1c2641;color:white;font-weight:bold;border-radius:4px;font-size:0.8rem;padding:4px 8px;">${faseInfo.titulo}</td>`;
+                tbody.appendChild(trF);
+                jogosFase.forEach(j => tbody.appendChild(_linhaComparacao(j, bets, betsOutro, classificacao, statsGrupos, atribuicaoTerceiros)));
+            }
+        });
+    }
+
+    function _linhaComparacao(jogo, bets, betsOutro, classificacao, statsGrupos, atribuicaoTerceiros) {
+        const bet = bets[jogo.id] || {};
+        const betOutro = betsOutro[jogo.id] || {};
+        const tr = document.createElement('tr');
+
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        const placar = bet.placar || '—';
+        const casaVence = bet.resultado === 'Casa' || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+        const foraVence = bet.resultado === 'Fora' || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
+
+        // Highlight if bets differ
+        const igualAoOutro = bet.resultado && betOutro.resultado && (bet.resultado === betOutro.resultado);
+        tr.className = igualAoOutro ? 'bet-igual' : (bet.resultado && betOutro.resultado ? 'bet-diferente' : '');
+
+        tr.innerHTML = `
+            <td style="color:#888;font-size:0.75rem;">${jogo.id}</td>
+            <td style="font-size:0.8rem;"><span class="${casaVence ? 'aposta-time-vencedor fw-bold' : ''}">${nomeTime1}</span></td>
+            <td style="text-align:center;"><span class="placar-salvo" style="font-size:0.8rem;">${placar}</span></td>
+            <td style="font-size:0.8rem;"><span class="${foraVence ? 'aposta-time-vencedor fw-bold' : ''}">${nomeTime2}</span></td>`;
+        return tr;
+    }
+
+    function fecharComparacao() {
+        document.getElementById('comparar-container').style.display = 'none';
+        document.getElementById('btn-fechar-comparar').style.display = 'none';
+    }
+
+    // ==================== APOSTAS DO PRÓPRIO PARTICIPANTE ====================
+
+    function carregarApostasProprio() {
+        const participante = usuarioLogado;
+        if (!participante) {
+            document.getElementById('apostas-container').style.display = 'none';
+            document.getElementById('salvar-todas-row').style.display = 'none';
+            return;
+        }
+        // Show & populate participant selector
+        const verBar = document.getElementById('ver-outros-bar');
+        verBar.style.display = 'flex';
+        // Reset selector to "— Meus palpites —" when reloading own bets
+        const sel = document.getElementById('select-outro-participante');
+        if (sel.value !== '') {
+            sel.value = '';
+            document.getElementById('btn-comparar').style.display = 'none';
+        }
+        popularSeletorParticipantes();
+
+        document.getElementById('apostas-container').style.display = 'block';
+        const podeEditar = podeEditarAgora();
+        document.getElementById('salvar-todas-row').style.display = podeEditar ? 'block' : 'none';
+
+        // Aviso de prazo encerrado
+        let avisoEl = document.getElementById('aviso-prazo-encerrado');
+        if (!avisoEl) {
+            avisoEl = document.createElement('div');
+            avisoEl.id = 'aviso-prazo-encerrado';
+            avisoEl.style.cssText = 'background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 16px;margin-bottom:12px;font-weight:bold;color:#856404;';
+            document.getElementById('apostas-container').before(avisoEl);
+        }
+        avisoEl.style.display = podeEditar ? 'none' : 'block';
+        avisoEl.textContent = '🔒 O prazo para apostas encerrou. Seus palpites estão salvos e não podem mais ser alterados.';
+
+        const betsParticipante = apostasAtuais[participante] || {};
+        const tbody = document.querySelector('#tabela-apostas tbody');
+        tbody.innerHTML = '';
+        const classificacao = calcularGrupos(betsParticipante);
+        const statsGrupos = calcularEstatisticasGrupos(betsParticipante);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+        if (atribuicaoTerceiros === null) {
+            mostrarModal('Configuração inválida', 'Seus palpites de fase de grupos não permitem uma distribuição oficial dos terceiros colocados. Ajuste os resultados.', 'erro');
+            return;
+        }
+        const fasesGrupos = [
+            { titulo: 'FASE DE GRUPOS', subgrupos: true },
+            { titulo: 'MATA-MATA - 16 AVOS', filtro: j => j.fase === '16 avos' },
+            { titulo: 'MATA-MATA - Oitavas', filtro: j => j.fase === 'Oitavas' },
+            { titulo: 'MATA-MATA - Quartas', filtro: j => j.fase === 'Quartas' },
+            { titulo: 'Semifinal', filtro: j => j.fase === 'Semifinal' },
+            { titulo: 'Disputa de 3º lugar', filtro: j => j.fase === '3º Lugar' },
+            { titulo: 'FINAL', filtro: j => j.fase === 'Final' }
+        ];
+        const gruposLetras = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+        fasesGrupos.forEach(faseInfo => {
+            if (faseInfo.titulo === 'FASE DE GRUPOS') {
+                gruposLetras.forEach(letra => {
+                    const jogosDoGrupo = jogos.filter(j => j.grupo === letra && j.fase === 'Fase de Grupos');
+                    if (jogosDoGrupo.length === 0) return;
+                    const trGrupo = document.createElement('tr');
+                    trGrupo.innerHTML = `<td colspan="5" style="background:#1c2641; color:white; font-weight:bold; border-radius: 5px;">GRUPO ${letra}</td>`;
+                    tbody.appendChild(trGrupo);
+                    jogosDoGrupo.forEach(jogo => {
+                        tbody.appendChild(criarLinhaJogo(jogo, betsParticipante, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros));
+                    });
+                });
+            } else {
+                const jogosFase = jogos.filter(faseInfo.filtro);
+                if (jogosFase.length === 0) return;
+                const trFase = document.createElement('tr');
+                trFase.innerHTML = `<td colspan="5" style="background: #1c2641; color:white; font-weight:bold; border-radius: 5px;">${faseInfo.titulo}</td>`;
+                tbody.appendChild(trFase);
+                jogosFase.forEach(jogo => {
+                    tbody.appendChild(criarLinhaJogo(jogo, betsParticipante, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros));
+                });
+            }
+        });
+    }
+
+    function criarLinhaJogo(jogo, bets, podeEditar, classificacao, statsGrupos, atribuicaoTerceiros) {
+        const bet = bets[jogo.id] || { placar: '', resultado: '', salvo: false, penaltis: null };
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-jogo-id', jogo.id);
+
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        let colunaTime1, colunaPlacar, colunaTime2, colunaAcao;
+
+        if (!bet.salvo) {
+            colunaTime1 = `<span class="aposta-time">${nomeTime1}</span>`;
+            colunaTime2 = `<span class="aposta-time">${nomeTime2}</span>`;
+            if (podeEditar) {
+                colunaPlacar = `<input type="text" class="form-control form-control-sm aposta-placar" placeholder="ex: 2-1" value="${bet.placar}">`;
+                colunaAcao = `<button class="btn btn-sm btn-salvar" onclick="salvarApostaJogo('${usuarioLogado}', ${jogo.id})">Salvar</button>`;
+            } else {
+                colunaPlacar = bet.placar ? `<span class="placar-salvo" style="color:#999;">${bet.placar}</span>` : `<span style="color:#bbb;">—</span>`;
+                colunaAcao = `<span style="color:#999; font-size:0.85rem;" title="Prazo de apostas encerrado">🔒</span>`;
+            }
+        } else {
+            const casaVence = (bet.resultado === 'Casa') || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+            const foraVence = (bet.resultado === 'Fora') || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
+            colunaTime1 = `<span class="aposta-time ${casaVence ? 'aposta-time-vencedor' : ''}">${nomeTime1}</span>`;
+            colunaPlacar = `<span class="placar-salvo">${bet.placar}</span>`;
+            colunaTime2 = `<span class="aposta-time ${foraVence ? 'aposta-time-vencedor' : ''}">${nomeTime2}</span>`;
+            let resultadoExib = '';
+            if (bet.resultado === 'Casa') resultadoExib = `Vitória ${nomeTime1}`;
+            else if (bet.resultado === 'Fora') resultadoExib = `Vitória ${nomeTime2}`;
+            else if (bet.resultado === 'Empate') {
+                if (bet.penaltis) {
+                    const vencedorPenaltis = bet.penaltis === 'Casa' ? nomeTime1 : nomeTime2;
+                    resultadoExib = `Empate (pênaltis: ${vencedorPenaltis})`;
+                } else {
+                    resultadoExib = 'Empate';
+                }
+            }
+            colunaAcao = '<span class="salvo-badge">✅ Salvo</span>';
+            if (podeEditar) {
+                colunaAcao += ` <button class="btn btn-sm btn-editar" onclick="editarAposta(${jogo.id})">✏️ Editar</button>`;
+            }
+            if (bet.penaltis && resultadoExib) {
+                colunaAcao += `<div class="text-muted small">${resultadoExib}</div>`;
+            }
+        }
+
+        tr.innerHTML = `
+            <td>${jogo.id}</td>
+            <td>${colunaTime1}</td>
+            <td>${colunaPlacar}</td>
+            <td>${colunaTime2}</td>
+            <td>${colunaAcao}</td>`;
+        return tr;
+    }
+
+    async function editarAposta(idJogo) {
+        event.preventDefault();
+        if (!usuarioLogado) return;
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const bet = bets[idJogo];
+        if (!bet) return;
+        bet.salvo = false;
+        bet.penaltis = null;
+        const { estatisticas, ...palpites } = bets;
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(usuarioLogado)}`, { palpites });
+            carregarApostasProprio();
+            renderizarBracket();
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao editar aposta.', 'erro'); }
+    }
+
+    function sincronizarApostasDaTabela() {
+        if (!usuarioLogado) return;
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const linhas = document.querySelectorAll('#tabela-apostas tbody tr');
+        for (const row of linhas) {
+            if (row.cells.length < 5) continue;
+            const idJogo = parseInt(row.cells[0].textContent);
+            if (isNaN(idJogo)) continue;
+            const bet = bets[idJogo] || { placar: '', resultado: '', salvo: false, penaltis: null };
+            if (bet.salvo) continue;
+            const inputPlacar = row.cells[2].querySelector('input');
+            if (inputPlacar) {
+                bet.placar = inputPlacar.value.trim();
+                if (/^\d+-\d+$/.test(bet.placar)) {
+                    const [g1, g2] = bet.placar.split('-').map(Number);
+                    bet.resultado = resultadoTexto(g1, g2);
+                } else {
+                    bet.resultado = '';
+                }
+            }
+            bets[idJogo] = bet;
+        }
+        apostasAtuais[usuarioLogado] = bets;
+    }
+
+    // ==================== ESTATÍSTICAS DOS USUÁRIOS ====================
+    const mapaCampos = {
+        'artilheiro': 'aposta-artilheiro',
+        'assistencias': 'aposta-assistencias',
+        'cartaoVermelho': 'aposta-cartao-vermelho',
+        'selecaoCartoes': 'aposta-selecao-cartoes',
+        'selecaoEscanteios': 'aposta-selecao-escanteios',
+        'selecaoGols': 'aposta-selecao-gols',
+        'totalGols': 'aposta-total-gols'
+    };
+
+    function atualizarInterfaceCampo(campo, salvo, podeEditar = true) {
+        const acoesDiv = document.getElementById(`acoes-${campo}`);
+        if (!acoesDiv) return;
+        const input = document.getElementById(mapaCampos[campo]);
+        if (!input) return;
+
+        if (salvo) {
+            input.disabled = true;
+            if (podeEditar) {
+                acoesDiv.innerHTML = `<span class="salvo-badge">✅ Salvo</span>
+                    <button class="btn btn-sm btn-editar" type="button" onclick="editarEstatisticaCampo('${campo}')">✏️ Editar</button>`;
+            } else {
+                acoesDiv.innerHTML = `<span class="salvo-badge">✅ Salvo</span>`;
+            }
+        } else {
+            if (!podeEditar) {
+                input.disabled = true;
+                acoesDiv.innerHTML = '';
+            } else {
+                input.disabled = false;
+                acoesDiv.innerHTML = `<button class="btn btn-sm btn-salvar" type="button" onclick="salvarEstatisticaCampo('${campo}')">Salvar</button>`;
+            }
+        }
+    }
+
+    async function salvarEstatisticaCampo(campo) {
+        if (!usuarioLogado) { mostrarModal('Erro', 'Faça login primeiro.', 'erro'); return; }
+        if (!podeEditarAgora()) {
+            mostrarModal('Prazo encerrado', 'As apostas de estatísticas não podem mais ser alteradas.', 'erro');
+            return;
+        }
+        const input = document.getElementById(mapaCampos[campo]);
+        const valor = input.value.trim();
+        if (!valor) { mostrarModal('Atenção', 'Preencha o campo antes de salvar.', 'erro'); return; }
+
+        if (!apostasAtuais[usuarioLogado]) apostasAtuais[usuarioLogado] = {};
+        if (!apostasAtuais[usuarioLogado].estatisticas) apostasAtuais[usuarioLogado].estatisticas = {};
+        apostasAtuais[usuarioLogado].estatisticas[campo] = valor;
+
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(usuarioLogado)}`, {
+                estatisticas: apostasAtuais[usuarioLogado].estatisticas
+            });
+            atualizarInterfaceCampo(campo, true);
+            renderizarClassificacao();
+            mostrarToastNoTopo(`Aposta de "${campo}" salva!`);
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao salvar.', 'erro'); }
+    }
+
+    function editarEstatisticaCampo(campo) {
+        if (!podeEditarAgora()) {
+            mostrarModal('Prazo encerrado', 'Não é mais possível editar as estatísticas.', 'erro');
+            return;
+        }
+        atualizarInterfaceCampo(campo, false, true);
+    }
+
+    async function salvarTodasEstatisticas() {
+        if (!usuarioLogado) { mostrarModal('Erro', 'Faça login primeiro.', 'erro'); return; }
+        if (!podeEditarAgora()) {
+            mostrarModal('Prazo encerrado', 'As apostas de estatísticas não podem mais ser alteradas.', 'erro');
+            return;
+        }
+        const estatisticas = {};
+        let todosPreenchidos = true;
+        for (const [campo, inputId] of Object.entries(mapaCampos)) {
+            const valor = document.getElementById(inputId).value.trim();
+            if (!valor) { todosPreenchidos = false; continue; }
+            estatisticas[campo] = valor;
+        }
+        if (!todosPreenchidos) { mostrarModal('Atenção', 'Preencha todos os campos antes de salvar.', 'erro'); return; }
+
+        if (!apostasAtuais[usuarioLogado]) apostasAtuais[usuarioLogado] = {};
+        apostasAtuais[usuarioLogado].estatisticas = estatisticas;
+
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(usuarioLogado)}`, { estatisticas });
+            for (const campo of Object.keys(mapaCampos)) {
+                atualizarInterfaceCampo(campo, true);
+            }
+            renderizarClassificacao();
+            mostrarModal('Sucesso', 'Todas as estatísticas salvas!');
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao salvar.', 'erro'); }
+    }
+
+    function carregarEstatisticasProprio() {
+        if (!usuarioLogado) return;
+        const container = document.getElementById('estatisticas-container');
+        container.style.display = 'block';
+        const bets = apostasAtuais[usuarioLogado]?.estatisticas || {};
+        const podeEditar = podeEditarAgora();
+        document.querySelector('#sub-estatisticas button.btn-salvar').style.display = podeEditar ? 'inline-block' : 'none';
+        for (const [campo, inputId] of Object.entries(mapaCampos)) {
+            const input = document.getElementById(inputId);
+            const valor = bets[campo] || '';
+            input.value = valor;
+            atualizarInterfaceCampo(campo, !!valor, podeEditar);
+        }
+    }
+
+    // ==================== VALIDAÇÃO OFICIAL (DAVID) ====================
+    async function carregarDadosOficiaisValidacao() {
+        const container = document.getElementById('validar-container');
+        container.style.display = 'block';
+        try {
+            const dados = await apiGet('/api/estatisticas-oficiais');
+            estatisticasOficiaisCache = dados;
+            document.getElementById('oficial-artilheiro').value = dados.artilheiro || '';
+            document.getElementById('oficial-assistencias').value = dados.assistencias || '';
+            document.getElementById('oficial-cartao-vermelho').value = dados.cartaoVermelho || '';
+            document.getElementById('oficial-selecao-cartoes').value = dados.selecaoCartoes || '';
+            document.getElementById('oficial-selecao-escanteios').value = dados.selecaoEscanteios || '';
+            document.getElementById('oficial-selecao-gols').value = dados.selecaoGols || '';
+            document.getElementById('oficial-total-gols').value = dados.totalGols || '';
+        } catch (e) { console.error(e); }
+    }
+
+    async function salvarEstatisticasOficiais() {
+        if (usuarioLogado !== "David") { mostrarModal('Erro', 'Apenas o administrador pode salvar.', 'erro'); return; }
+        const dados = {
+            artilheiro: document.getElementById('oficial-artilheiro').value.trim(),
+            assistencias: document.getElementById('oficial-assistencias').value.trim(),
+            cartaoVermelho: document.getElementById('oficial-cartao-vermelho').value.trim(),
+            selecaoCartoes: document.getElementById('oficial-selecao-cartoes').value.trim(),
+            selecaoEscanteios: document.getElementById('oficial-selecao-escanteios').value.trim(),
+            selecaoGols: document.getElementById('oficial-selecao-gols').value.trim(),
+            totalGols: document.getElementById('oficial-total-gols').value.trim()
+        };
+        if (Object.values(dados).some(v => !v)) {
+            mostrarModal('Atenção', 'Preencha todos os campos oficiais.', 'erro');
+            return;
+        }
+        try {
+            await apiPost('/api/estatisticas-oficiais', dados);
+            estatisticasOficiaisCache = dados;
+            mostrarModal('Sucesso', 'Dados oficiais salvos! A classificação será recalculada.');
+            renderizarClassificacao();
+        } catch (e) { console.error(e); mostrarModal('Erro', 'Erro ao salvar.', 'erro'); }
+    }
+
+    // ==================== PONTUAÇÃO ====================
+    async function salvarPontuacaoNoBD(classificacaoArray) {
+        try {
+            await apiPost('/api/pontuacao', classificacaoArray);
+        } catch (e) {
+            console.error('Erro ao salvar pontuação:', e);
+        }
+    }
+
+    // ==================== CLASSIFICAÇÃO ====================
+    function renderizarClassificacao() {
+        apiGet('/api/estatisticas-oficiais').then(oficial => {
+            estatisticasOficiaisCache = oficial || {};
+            calcularEExibir(estatisticasOficiaisCache);
+        }).catch(() => calcularEExibir(estatisticasOficiaisCache || {}));
+
+        function calcularEExibir(oficial) {
+            // Build a "bets" object from official results so we can reuse bracket-resolution functions
+            const betsOficiais = {};
+            for (const j of jogos) {
+                const res = resultadosAtuais[j.id];
+                if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
+                betsOficiais[j.id] = {
+                    placar: `${res.golsT1}-${res.golsT2}`,
+                    resultado: resultadoTexto(res.golsT1, res.golsT2),
+                    penaltis: res.penaltis || null,
+                    salvo: true
+                };
+            }
+            const classOficial = calcularGrupos(betsOficiais);
+            const statsGruposOficial = calcularEstatisticasGrupos(betsOficiais);
+            const tercOficial = atribuirTerceiros(statsGruposOficial);
+
+            const preClassificacao = participantes.map(nome => {
+                let pontosPlacar = 0, pontosResultado = 0, pontosExtras = 0;
+                const bets = apostasAtuais[nome] || {};
+
+                // Build participant bracket for knockout team resolution
+                const classPalpite = calcularGrupos(bets);
+                const statsPalpite = calcularEstatisticasGrupos(bets);
+                const tercPalpite = atribuirTerceiros(statsPalpite);
+
+                for (const jogo of jogos) {
+                    const res = resultadosAtuais[jogo.id];
+                    if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
+                    const bet = bets[jogo.id];
+                    if (!bet || !bet.placar || !bet.resultado) continue;
+
+                    // REGRA MATA-MATA: após fase de grupos, só pontua se ao menos 1 time apostado jogou de fato aquela partida
+                    if (jogo.fase !== 'Fase de Grupos') {
+                        const t1Of = resolverTimeRaw(jogo.time1, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
+                        const t2Of = resolverTimeRaw(jogo.time2, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
+                        const t1Pa = resolverTimeRaw(jogo.time1, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
+                        const t2Pa = resolverTimeRaw(jogo.time2, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
+
+                        // A resolved team name is not a placeholder (1A, V74, 3A/B, Vencedor J101, etc.)
+                        const isRealTeam = t => t && t.length > 2 && !/^\d[a-z]$/i.test(t) && !/^v\d+$/i.test(t) && !/^3[a-z/]+$/i.test(t) && !/^(vencedor|perdedor)/i.test(t);
+                        const timesOficiais = [t1Of, t2Of].filter(isRealTeam);
+                        const timesPalpite = [t1Pa, t2Pa].filter(isRealTeam);
+
+                        if (timesOficiais.length > 0 && timesPalpite.length > 0) {
+                            const algumMatch = timesPalpite.some(t => timesOficiais.includes(t));
+                            if (!algumMatch) continue; // Nenhum time apostado jogou essa partida — sem pontos
+                        }
+                    }
+
+                    const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
+                    const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
+                                            bet.resultado === 'Fora' ? 'Fora' :
+                                            (bet.penaltis || null);
+                    const vencedorRealJogo = vencedorReal(jogo.id);
+                    const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
+                    if (acertouPlacar) pontosPlacar += 3;
+                    if (acertouResultado) pontosResultado += 1;
+                }
+
+                // REGRA CAMPEÃO: +20 pontos se acertou o vencedor da Final (jogo 104)
+                const finalOficial = resultadosAtuais[104];
+                if (finalOficial && typeof finalOficial.golsT1 === 'number' && typeof finalOficial.golsT2 === 'number') {
+                    const vencJogo104Of = vencedorJogo(104, betsOficiais);
+                    const vencJogo104Pa = vencedorJogo(104, bets);
+                    if (vencJogo104Of && vencJogo104Pa) {
+                        const campeaoOficial = resolverTimeRaw(vencJogo104Of, classOficial, statsGruposOficial, betsOficiais, tercOficial);
+                        const campeaoPalpite = resolverTimeRaw(vencJogo104Pa, classPalpite, statsPalpite, bets, tercPalpite);
+                        if (campeaoOficial && campeaoPalpite &&
+                            campeaoOficial.toLowerCase() === campeaoPalpite.toLowerCase()) {
+                            pontosExtras += 20;
+                        }
+                    }
+                }
+
+                const est = bets.estatisticas || {};
+                if (oficial.artilheiro && est.artilheiro && est.artilheiro.toLowerCase() === oficial.artilheiro.toLowerCase()) pontosExtras += 20;
+                if (oficial.assistencias && est.assistencias && est.assistencias.toLowerCase() === oficial.assistencias.toLowerCase()) pontosExtras += 15;
+                if (oficial.cartaoVermelho && est.cartaoVermelho && est.cartaoVermelho.toLowerCase() === oficial.cartaoVermelho.toLowerCase()) pontosExtras += 15;
+                if (oficial.selecaoCartoes && est.selecaoCartoes && est.selecaoCartoes.toLowerCase() === oficial.selecaoCartoes.toLowerCase()) pontosExtras += 10;
+                if (oficial.selecaoEscanteios && est.selecaoEscanteios && est.selecaoEscanteios.toLowerCase() === oficial.selecaoEscanteios.toLowerCase()) pontosExtras += 10;
+                if (oficial.selecaoGols && est.selecaoGols && est.selecaoGols.toLowerCase() === oficial.selecaoGols.toLowerCase()) pontosExtras += 10;
+
+                return { nome, pontosPlacar, pontosResultado, pontosExtras, total: pontosPlacar + pontosResultado + pontosExtras, est };
+            });
+
+            let menorDiferenca = Infinity;
+            const diferencas = [];
+
+            if (oficial.totalGols) {
+                const oficialNum = parseInt(oficial.totalGols);
+                if (!isNaN(oficialNum)) {
+                    preClassificacao.forEach(item => {
+                        const aposta = item.est.totalGols;
+                        if (aposta && !isNaN(parseInt(aposta))) {
+                            const apostaNum = parseInt(aposta);
+                            const diff = Math.abs(oficialNum - apostaNum);
+                            diferencas.push({ nome: item.nome, diff });
+                            if (diff < menorDiferenca) menorDiferenca = diff;
+                        }
+                    });
+                }
+            }
+
+            if (menorDiferenca < Infinity) {
+                const vencedores = diferencas.filter(d => d.diff === menorDiferenca).map(d => d.nome);
+                preClassificacao.forEach(item => {
+                    if (vencedores.includes(item.nome)) {
+                        item.pontosExtras += 20;
+                        item.total = item.pontosPlacar + item.pontosResultado + item.pontosExtras;
+                    }
+                });
+            }
+
+            preClassificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
+            let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
+                <thead><tr><th>Posição</th><th>Participante</th><th>Pts Placar (3)</th><th>Pts Resultado (1)</th><th>Pts Extras</th><th>TOTAL</th></tr></thead><tbody>`;
+            preClassificacao.forEach((item, index) => {
+                let classe = '';
+                if (index === 0) classe = 'ranking-ouro';
+                else if (index === 1) classe = 'ranking-prata';
+                else if (index === 2) classe = 'ranking-bronze';
+                html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td>${item.pontosPlacar}</td><td>${item.pontosResultado}</td><td>${item.pontosExtras}</td><td><strong>${item.total}</strong></td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('classificacao-container').innerHTML = html;
+
+            salvarPontuacaoNoBD(preClassificacao);
+        }
+    }
+
+    // ==================== MODAL DE PÊNALTIS ====================
+    let salvamentoPendente = null;
+
+    function abrirModalPenaltis(participante, idJogo) {
+        const jogo = jogos.find(j => j.id === idJogo);
+        if (!jogo) return;
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        if (!bet) return;
+
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+        const nomeTime1 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time1)} ${jogo.time1}`
+            : resolverPlaceholder(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const nomeTime2 = (jogo.fase === 'Fase de Grupos')
+            ? `${flag(jogo.time2)} ${jogo.time2}`
+            : resolverPlaceholder(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+
+        document.getElementById('penalty-btn-casa').innerHTML = `${nomeTime1}`;
+        document.getElementById('penalty-btn-fora').innerHTML = `${nomeTime2}`;
+
+        salvamentoPendente = { participante, idJogo };
+
+        const modal = new bootstrap.Modal(document.getElementById('modalPenaltis'));
+        modal.show();
+
+        document.getElementById('penalty-btn-casa').onclick = () => {
+            modal.hide();
+            confirmarPenalti('Casa');
+        };
+        document.getElementById('penalty-btn-fora').onclick = () => {
+            modal.hide();
+            confirmarPenalti('Fora');
+        };
+    }
+
+    async function confirmarPenalti(escolha) {
+        event.preventDefault();
+        if (!salvamentoPendente) return;
+        const { participante, idJogo } = salvamentoPendente;
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        bet.penaltis = escolha;
+        bet.salvo = true;
+        const { estatisticas, ...palpites } = bets;
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(participante)}`, { palpites });
+            carregarApostasProprio();
+            renderizarBracket();
+            renderizarClassificacao();
+            mostrarToastNoTopo(`Aposta do jogo #${idJogo} salva!`);
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar a aposta.', 'erro');
+        }
+        salvamentoPendente = null;
+    }
+
+    async function salvarApostaJogo(participante, idJogo) {
+        if (usuarioLogado !== participante) {
+            mostrarModal('Erro', 'Você não está logado como ' + participante, 'erro');
+            return;
+        }
+        if (!podeEditarAgora()) {
+            mostrarModal('Prazo encerrado', 'O prazo para apostas encerrou. Não é mais possível salvar ou editar palpites.', 'erro');
+            return;
+        }
+        sincronizarApostasDaTabela();
+        const bets = apostasAtuais[participante] || {};
+        const bet = bets[idJogo];
+        if (!bet || bet.salvo) return;
+        const placar = bet.placar;
+        if (!placar || !/^\d+-\d+$/.test(placar)) {
+            mostrarModal('Atenção', 'Informe o placar no formato "2-1".', 'erro');
+            return;
+        }
+        const jogo = jogos.find(j => j.id === idJogo);
+        if (jogo && jogo.fase !== 'Fase de Grupos' && bet.resultado === 'Empate' && !bet.penaltis) {
+            abrirModalPenaltis(participante, idJogo);
+            return;
+        }
+        bet.salvo = true;
+        const { estatisticas, ...palpites } = bets;
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(participante)}`, { palpites });
+            carregarApostasProprio();
+            renderizarBracket();
+            renderizarClassificacao();
+            mostrarToastNoTopo(`Aposta do jogo #${idJogo} salva!`);
+        } catch (e) {
+            console.error('Erro ao salvar:', e);
+            mostrarModal('Erro ao salvar', 'Verifique sua conexão.\n' + e.message, 'erro');
+            bet.salvo = false;
+        }
+    }
+
+    async function salvarTodasApostas() {
+        event.preventDefault();
+        if (!usuarioLogado) return;
+        if (!podeEditarAgora()) {
+            mostrarModal('Prazo encerrado', 'O prazo para apostas encerrou. Não é mais possível salvar ou editar palpites.', 'erro');
+            return;
+        }
+        sincronizarApostasDaTabela();
+        const betsParticipante = apostasAtuais[usuarioLogado] || {};
+        let salvouAlgum = false;
+        for (const idJogo in betsParticipante) {
+            const bet = betsParticipante[idJogo];
+            if (!bet || bet.salvo) continue;
+            if (bet.placar && /^\d+-\d+$/.test(bet.placar)) {
+                const jogo = jogos.find(j => j.id === parseInt(idJogo));
+                if (jogo && jogo.fase !== 'Fase de Grupos' && bet.resultado === 'Empate' && !bet.penaltis) {
+                    continue;
+                }
+                bet.salvo = true;
+                salvouAlgum = true;
+            }
+        }
+        if (!salvouAlgum) {
+            mostrarModal('Nada a salvar', 'Preencha corretamente os placares e, se for mata-mata com empate, escolha o vencedor nos pênaltis.', 'erro');
+            return;
+        }
+        apostasAtuais[usuarioLogado] = betsParticipante;
+        const { estatisticas, ...palpites } = betsParticipante;
+        try {
+            await apiPost(`/api/apostas/${encodeURIComponent(usuarioLogado)}`, { palpites });
+            carregarApostasProprio();
+            renderizarBracket();
+            renderizarClassificacao();
+            mostrarToastNoTopo('Todas as apostas válidas foram salvas!');
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar as apostas.', 'erro');
+        }
+    }
+
+    const datasJogos = {
+        1: "11/06", 2: "11/06", 3: "12/06", 4: "12/06", 5: "13/06", 6: "13/06",
+        7: "13/06", 8: "13/06", 9: "14/06", 10: "14/06", 11: "14/06", 12: "14/06",
+        13: "15/06", 14: "15/06", 15: "15/06", 16: "15/06", 17: "15/06", 18: "15/06",
+        19: "17/06", 20: "17/06", 21: "17/06", 22: "17/06", 23: "16/06", 24: "16/06",
+        25: "18/06", 26: "18/06", 27: "18/06", 28: "18/06", 29: "19/06", 30: "19/06",
+        31: "19/06", 32: "19/06", 33: "20/06", 34: "20/06", 35: "20/06", 36: "20/06",
+        37: "21/06", 38: "21/06", 39: "21/06", 40: "21/06", 41: "22/06", 42: "22/06",
+        43: "22/06", 44: "22/06", 45: "23/06", 46: "23/06", 47: "21/06", 48: "21/06",
+        49: "24/06", 50: "24/06", 51: "24/06", 52: "24/06", 53: "24/06", 54: "24/06",
+        55: "25/06", 56: "25/06", 57: "25/06", 58: "25/06", 59: "25/06", 60: "25/06",
+        61: "26/06", 62: "26/06", 63: "26/06", 64: "26/06", 65: "27/06", 66: "27/06",
+        67: "27/06", 68: "27/06", 69: "26/06", 70: "26/06", 71: "27/06", 72: "27/06",
+        73: "28/06", 74: "29/06", 75: "30/06", 76: "01/07", 77: "02/07", 78: "02/07",
+        79: "28/06", 80: "03/07", 81: "29/06", 82: "30/06", 83: "01/07", 84: "29/06",
+        85: "28/06", 86: "03/07", 87: "30/06", 88: "01/07",
+        89: "04/07", 90: "04/07", 91: "05/07", 92: "05/07",
+        93: "06/07", 94: "06/07", 95: "07/07", 96: "07/07",
+        97: "09/07", 98: "10/07", 99: "10/07", 100: "11/07",
+        101: "14/07", 102: "15/07", 103: "18/07", 104: "19/07"
+    };
+
+    function renderizarTabelaJogos() {
+        const isAdmin = (usuarioLogado === 'David');
+        const isKnockout = fase => fase !== 'Fase de Grupos';
+        let html = `<table class="table table-striped table-hover" id="tabela-jogos">
+            <thead><tr><th>#</th><th>Data</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th>${isAdmin ? '<th>Pênaltis (mata-mata)</th>' : ''}<th>Resultado</th></tr></thead><tbody>`;
+        jogos.forEach(jogo => {
+            const temResultado = jogoPossuiResultadoOficial(jogo.id);
+            const res = resultadosAtuais[jogo.id];
+            const placarOficial = temResultado ? `${res.golsT1}-${res.golsT2}` : '';
+            const penaltisOficial = temResultado ? (res.penaltis || '') : '';
+            const resultadoDisplay = getResultadoDisplay(jogo, placarOficial);
+            const data = datasJogos[jogo.id] || '';
+
+            let placarCell, penaltisCell = '', resultadoCell;
+
+            if (isAdmin && temResultado) {
+                placarCell = `<span class="placar-salvo">${placarOficial}</span> <button class="btn btn-sm btn-outline-secondary py-0 px-1" style="font-size:0.7rem;" onclick="limparResultado(${jogo.id})" title="Editar resultado">✏️</button>`;
+                if (isAdmin) penaltisCell = penaltisOficial ? `<span class="text-muted small">${penaltisOficial}</span>` : '<span class="text-muted small">—</span>';
+                resultadoCell = `<strong>${resultadoDisplay}</strong>`;
+            } else if (isAdmin && !temResultado) {
+                placarCell = `<input type="text" class="form-control form-control-sm placar-input" data-jogo-id="${jogo.id}" placeholder="2-1" style="width:72px;display:inline-block;">`;
+                if (isAdmin && isKnockout(jogo.fase)) {
+                    penaltisCell = `<select class="form-select form-select-sm penaltis-select" data-jogo-id="${jogo.id}" style="width:90px;display:inline-block;">
+                        <option value="">—</option>
+                        <option value="Casa">${jogo.time1 && jogo.time1.length < 10 ? jogo.time1 : 'Time 1'}</option>
+                        <option value="Fora">${jogo.time2 && jogo.time2.length < 10 ? jogo.time2 : 'Time 2'}</option>
+                    </select>`;
+                } else if (isAdmin) {
+                    penaltisCell = '—';
+                }
+                resultadoCell = '';
+            } else {
+                placarCell = placarOficial || '<span class="text-muted">—</span>';
+                resultadoCell = placarOficial ? `<strong>${resultadoDisplay}</strong>` : '';
+            }
+
+            html += `<tr class="${temResultado ? 'jogo-travado' : ''}">
+                <td>${jogo.id}</td><td><strong>${data}</strong></td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
+                <td>${flag(jogo.time1)} ${jogo.time1}</td><td>${flag(jogo.time2)} ${jogo.time2}</td>
+                <td class="placar-cell">${placarCell}</td>${isAdmin ? `<td class="penaltis-cell">${penaltisCell}</td>` : ''}
+                <td class="resultado-cell">${resultadoCell}</td></tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('jogos-container').innerHTML = html;
+    }
+
+    function atualizarTudo() {
+        renderizarTabelaJogos();
+        renderizarClassificacao();
+        if (usuarioLogado) carregarApostasProprio();
+    }
+
+    
+
+    // ==================== POLLING (substitui onSnapshot) ====================
+    async function carregarDadosBD() {
+        try {
+            const [novosResultados, todasApostas] = await Promise.all([
+                apiGet('/api/resultados'),
+                apiGet('/api/apostas')
+            ]);
+
+            resultadosAtuais = novosResultados || {};
+
+            for (const [nome, data] of Object.entries(todasApostas || {})) {
+                if (nome === usuarioLogado) continue;
+                apostasAtuais[nome] = {
+                    ...(data.palpites || {}),
+                    estatisticas: data.estatisticas || {}
+                };
+            }
+            if (usuarioLogado && todasApostas[usuarioLogado]) {
+                const userData = todasApostas[usuarioLogado];
+                const localEst = apostasAtuais[usuarioLogado]?.estatisticas || {};
+                apostasAtuais[usuarioLogado] = {
+                    ...(userData.palpites || {}),
+                    estatisticas: Object.keys(localEst).length ? localEst : (userData.estatisticas || {})
+                };
+            }
+
+            atualizarJogosMataMataComResultadosReais();
+            renderizarTabelaJogos();
+            renderizarClassificacao();
+        } catch (e) {
+            console.error('Erro ao carregar dados:', e);
+        }
+    }
+
+    function configurarListeners() {
+        carregarDadosBD();
+        setInterval(carregarDadosBD, 15000);
+    }
+
+    async function salvarResultadosReais() {
+        if (usuarioLogado !== "David") {
+            mostrarModal('Acesso restrito', 'Apenas o administrador pode usar esta função.', 'erro');
+            return;
+        }
+        const novos = {};
+        document.querySelectorAll('.placar-input').forEach(input => {
+            const idJogo = parseInt(input.getAttribute('data-jogo-id'));
+            const txt = input.value.trim();
+            if (!txt) return;
+            const p = txt.split('-');
+            if (p.length !== 2) return;
+            const g1 = parseInt(p[0].trim()), g2 = parseInt(p[1].trim());
+            if (isNaN(g1) || isNaN(g2)) return;
+            const entry = { golsT1: g1, golsT2: g2 };
+            // Penaltis for knockout matches (only relevant when draw)
+            const penaltisSelect = document.querySelector(`.penaltis-select[data-jogo-id="${idJogo}"]`);
+            if (penaltisSelect && penaltisSelect.value) {
+                entry.penaltis = penaltisSelect.value;
+            }
+            novos[idJogo] = entry;
+        });
+        if (Object.keys(novos).length === 0) {
+            mostrarModal('Nada a salvar', 'Preencha pelo menos um placar para salvar.', 'erro');
+            return;
+        }
+        resultadosAtuais = { ...resultadosAtuais, ...novos };
+        try {
+            await apiPost('/api/resultados', resultadosAtuais);
+            atualizarTudo();
+            mostrarModal('Sucesso', `${Object.keys(novos).length} resultado(s) salvo(s)!`);
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao salvar resultados.', 'erro');
+        }
+    }
+
+    async function limparResultado(idJogo) {
+        if (usuarioLogado !== "David") return;
+        if (!confirm(`Remover resultado do jogo #${idJogo} para reeditar?`)) return;
+        delete resultadosAtuais[idJogo];
+        try {
+            await apiPost('/api/resultados', resultadosAtuais);
+            atualizarTudo();
+        } catch (e) {
+            console.error(e);
+            mostrarModal('Erro', 'Erro ao remover resultado.', 'erro');
+        }
+    }
+
+    async function atualizarClassificacao() {
+        if (usuarioLogado !== "David") {
+            mostrarModal('Acesso restrito', 'Apenas o administrador pode forçar a atualização.', 'erro');
+            return;
+        }
+        renderizarClassificacao();
+        mostrarModal('Atualizado', 'Classificação atualizada.');
+    }
+
+    function renderizarBracket() {
+        const container = document.getElementById('bracket-container');
+        if (!usuarioLogado) {
+            container.innerHTML = '<p class="text-center">Faça login para ver seu chaveamento previsto.</p>';
+            return;
+        }
+        const bets = apostasAtuais[usuarioLogado] || {};
+        const classificacao = calcularGrupos(bets);
+        const statsGrupos = calcularEstatisticasGrupos(bets);
+        const atribuicaoTerceiros = atribuirTerceiros(statsGrupos);
+
+        const resolver = (texto) => {
+            if (atribuicaoTerceiros && atribuicaoTerceiros[texto]) {
+                const time = atribuicaoTerceiros[texto];
+                return `${flag(time)} ${time}`;
+            }
+            return resolverPlaceholder(texto, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        };
+
+        const cardHTML = (jogoId) => {
+            const jogo = jogos.find(j => j.id === jogoId);
+            if (!jogo) return '';
+            const t1 = resolver(jogo.time1);
+            const t2 = resolver(jogo.time2);
+            const bet = bets[jogoId];
+            const placarTexto = bet && bet.placar ? bet.placar : '';
+            let casaVenceu = false, foraVenceu = false;
+            if (bet && bet.resultado) {
+                casaVenceu = (bet.resultado === 'Casa') || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
+                foraVenceu = (bet.resultado === 'Fora') || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
+            }
+            let gols1 = '', gols2 = '';
+            if (placarTexto && placarTexto.includes('-')) {
+                const partes = placarTexto.split('-');
+                gols1 = partes[0];
+                gols2 = partes[1];
+            }
+            return `
+                <div class="match-card" id="jogo-${jogoId}">
+                    <div class="match-num">Jogo ${jogoId}</div>
+                    <div class="team ${casaVenceu ? 'vencedor' : ''}">${t1}${gols1 ? `<span class="match-score"> ${gols1}</span>` : ''}</div>
+                    <div class="vs-text">vs</div>
+                    <div class="team ${foraVenceu ? 'vencedor' : ''}">${t2}${gols2 ? `<span class="match-score"> ${gols2}</span>` : ''}</div>
+                </div>`;
+        };
+
+        const fases = [
+            { nome: "16 avos", jogos: [74,77, 73,75, 83,84, 81,82, 76,78, 79,80, 86,88, 85,87] },
+            { nome: "Oitavas", jogos: [89,90, 93,94, 91,92, 95,96] },
+            { nome: "Quartas", jogos: [97,98, 99,100] },
+            { nome: "Semifinal", jogos: [101, 102] },
+            { nome: "Final", jogos: [104] },
+            { nome: "3º Lugar", jogos: [103] }
+        ];
+
+        const conexoes = {
+            89: [74, 77], 90: [73, 75], 91: [76, 78], 92: [79, 80],
+            93: [83, 84], 94: [81, 82], 95: [86, 88], 96: [85, 87],
+            97: [89, 90], 98: [93, 94], 99: [91, 92], 100: [95, 96],
+            101: [97, 98], 102: [99, 100], 103: [101, 102], 104: [101, 102]
+        };
+
+        let html = '<div class="bracket-wrapper">';
+        html += '<svg class="bracket-svg" id="bracket-svg"></svg>';
+        html += '<div class="bracket-cols">';
+
+        fases.forEach(fase => {
+            html += `<div class="round-column"><div class="round-title">${fase.nome}</div>`;
+            const jogosFase = fase.jogos;
+            for (let i = 0; i < jogosFase.length; i += 2) {
+                html += `<div class="pair-group" id="pair-${fase.nome}-${i}">`;
+                html += cardHTML(jogosFase[i]);
+                if (jogosFase[i + 1]) {
+                    html += cardHTML(jogosFase[i + 1]);
+                }
+                html += `</div>`;
+            }
+            html += `</div>`;
+        });
+
+        html += '</div></div>';
+        container.innerHTML = html;
+
+        setTimeout(() => {
+            const svg = document.getElementById('bracket-svg');
+            const wrapper = document.querySelector('.bracket-wrapper');
+            if (!svg || !wrapper) return;
+            const wrapperRect = wrapper.getBoundingClientRect();
+            svg.setAttribute('viewBox', `0 0 ${wrapperRect.width} ${wrapperRect.height}`);
+            svg.style.width = wrapperRect.width + 'px';
+            svg.style.height = wrapperRect.height + 'px';
+            let lines = '';
+            for (const [proxJogo, anteriores] of Object.entries(conexoes)) {
+                const cardProx = document.getElementById(`jogo-${proxJogo}`);
+                if (!cardProx) continue;
+                const pairProx = cardProx.closest('.pair-group');
+                if (!pairProx) continue;
+                const rectProx = pairProx.getBoundingClientRect();
+                const xProx = rectProx.left - wrapperRect.left + rectProx.width / 2;
+                const yProx = rectProx.top - wrapperRect.top + rectProx.height / 2;
+                for (const antId of anteriores) {
+                    const cardAnt = document.getElementById(`jogo-${antId}`);
+                    if (!cardAnt) continue;
+                    const pairAnt = cardAnt.closest('.pair-group');
+                    if (!pairAnt) continue;
+                    const rectAnt = pairAnt.getBoundingClientRect();
+                    const xAnt = rectAnt.right - wrapperRect.left;
+                    const yAnt = rectAnt.top - wrapperRect.top + rectAnt.height / 2;
+                    lines += `<line x1="${xAnt}" y1="${yAnt}" x2="${xProx}" y2="${yProx}" stroke="#2a5a3a" stroke-width="2" opacity="0.8" />`;
+                }
+            }
+            svg.innerHTML = lines;
+        }, 200);
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        const selectLogin = document.getElementById('login-participante');
+        selectLogin.innerHTML = '<option value="">-- Selecione --</option>';
+        participantes.forEach(nome => {
+            const opt = document.createElement('option');
+            opt.value = nome; opt.textContent = nome;
+            selectLogin.appendChild(opt);
+        });
+
+        await carregarSenhas();
+        configurarListeners();
+
+        setTimeout(() => {
+            renderizarTabelaJogos();
+            renderizarClassificacao();
+            renderizarBracket();
+        }, 100);
+
+        document.getElementById('sub-estatisticas-tab').addEventListener('shown.bs.tab', () => {
+            if (usuarioLogado) carregarEstatisticasProprio();
+        });
+        document.getElementById('classificacao-tab').addEventListener('shown.bs.tab', renderizarClassificacao);
+        document.getElementById('apostas-tab').addEventListener('shown.bs.tab', () => {
+            if (usuarioLogado) carregarApostasProprio();
+        });
+        document.getElementById('chaveamento-tab').addEventListener('shown.bs.tab', renderizarBracket);
+        document.getElementById('pote-total').textContent = (50 * participantes.length).toLocaleString('pt-BR');
+
+        document.getElementById('sub-validar-tab').addEventListener('shown.bs.tab', () => {
+            if (usuarioLogado === "David") carregarDadosOficiaisValidacao();
+        });
+    });
+</script>
+</body>
+</html>
