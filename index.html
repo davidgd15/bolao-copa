@@ -1013,7 +1013,8 @@ async function apiPost(url, data) {
         const g1 = res.golsT1, g2 = res.golsT2;
         if (g1 > g2) return 'Casa';
         if (g1 < g2) return 'Fora';
-        return res.penaltis || null;
+        // empate: retorna o vencedor nos pênaltis ou, se não houver, 'Empate'
+        return res.penaltis || 'Empate';
     }
 
     function podeEditarAgora() {
@@ -2009,7 +2010,8 @@ async function apiPost(url, data) {
                     const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
                     const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
                                             bet.resultado === 'Fora' ? 'Fora' :
-                                            (bet.penaltis || null);
+                                            bet.resultado === 'Empate' ? (bet.penaltis || 'Empate') :
+                                            null;
                     const vencedorRealJogo = vencedorReal(jogo.id);
                     const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
                     if (acertouPlacar) pontosPlacar += 3;
