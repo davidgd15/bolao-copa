@@ -965,14 +965,22 @@ async function apiPost(url, data) {
 
     // Mata-mata
     const mataMata = [
-        { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" }, { fase: "16 avos", jogo: 74, t1: "1E", t2: "3C/D/F" },
-        { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" }, { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
-        { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" }, { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
-        { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" }, { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
-        { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" }, { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
-        { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" }, { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
-        { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" }, { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
-        { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" }, { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
+        { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" },
+        { fase: "16 avos", jogo: 74, t1: "1E", t2: "3A/B/C/D/F" },
+        { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" },
+        { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
+        { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" },
+        { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
+        { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" },
+        { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
+        { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" },
+        { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
+        { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" },
+        { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
+        { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" },
+        { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
+        { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" },
+        { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
         { fase: "Oitavas", jogo: 89, t1: "V74", t2: "V77" }, { fase: "Oitavas", jogo: 90, t1: "V73", t2: "V75" },
         { fase: "Oitavas", jogo: 91, t1: "V76", t2: "V78" }, { fase: "Oitavas", jogo: 92, t1: "V79", t2: "V80" },
         { fase: "Oitavas", jogo: 93, t1: "V83", t2: "V84" }, { fase: "Oitavas", jogo: 94, t1: "V81", t2: "V82" },
@@ -1199,7 +1207,7 @@ async function apiPost(url, data) {
     }
 
     const vagasTerceiros = [
-        { placeholder: "3C/D/F", grupos: ['C','D','F'] },
+        { placeholder: "3A/B/C/D/F", grupos: ['A','B','C','D','F'] },
         { placeholder: "3C/D/F/G/H", grupos: ['C','D','F','G','H'] },
         { placeholder: "3C/E/F/H/I", grupos: ['C','E','F','H','I'] },
         { placeholder: "3E/H/I/J/K", grupos: ['E','H','I','J','K'] },
@@ -2307,12 +2315,12 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         55: "25/06", 56: "25/06", 57: "25/06", 58: "25/06", 59: "25/06", 60: "25/06",
         61: "26/06", 62: "26/06", 63: "26/06", 64: "26/06", 65: "27/06", 66: "27/06",
         67: "27/06", 68: "27/06", 69: "26/06", 70: "26/06", 71: "27/06", 72: "27/06",
-        73: "28/06", 74: "29/06", 75: "30/06", 76: "01/07", 77: "02/07", 78: "02/07",
-        79: "28/06", 80: "03/07", 81: "29/06", 82: "30/06", 83: "01/07", 84: "29/06",
-        85: "28/06", 86: "03/07", 87: "30/06", 88: "01/07",
+        73: "28/06", 74: "29/06", 75: "29/06", 76: "29/06", 77: "30/06", 78: "30/06",
+        79: "30/06", 80: "01/07", 81: "01/07", 82: "01/07", 83: "02/07", 84: "02/07",
+        85: "03/07", 86: "03/07", 87: "03/07", 88: "03/07",
         89: "04/07", 90: "04/07", 91: "05/07", 92: "05/07",
         93: "06/07", 94: "06/07", 95: "07/07", 96: "07/07",
-        97: "09/07", 98: "10/07", 99: "10/07", 100: "11/07",
+        97: "09/07", 98: "10/07", 99: "11/07", 100: "11/07",
         101: "14/07", 102: "15/07", 103: "18/07", 104: "19/07"
     };
 
