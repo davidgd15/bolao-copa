@@ -399,7 +399,8 @@
         <!-- Aba Jogos -->
         <div class="tab-pane fade show active" id="jogos">
             <div class="table-responsive" id="jogos-container"></div>
-            <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" type="button" onclick="salvarResultadosReais()">Salvar</button>
+            <button id="btn-forcar-salvar" class="btn btn-salvar mt-2" style="display: none;" type="button" onclick="salvarResultadosReais()">Salvar resultados</button>
+            <button id="btn-salvar-nomes" class="btn btn-salvar mt-2" style="display: none;" type="button" onclick="salvarNomesReais()">Salvar nomes</button>
         </div>
 
         <!-- Aba Apostas (com sub-abas) -->
@@ -428,7 +429,7 @@
                     </div>
                     <div class="table-responsive" id="apostas-container" style="display: none;">
                         <table class="table table-striped table-hover" id="tabela-apostas">
-                          <!--  <thead>
+                          <!-- <thead>
                                 <tr>
                                     <th>#</th>
                                     <th>Time 1</th>
@@ -965,33 +966,62 @@ async function apiPost(url, data) {
 
     // Mata-mata
     const mataMata = [
-        { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" },
-        { fase: "16 avos", jogo: 74, t1: "1E", t2: "3A/B/C/D/F" },
-        { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" },
-        { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
-        { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" },
-        { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
-        { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" },
-        { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
-        { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" },
-        { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
-        { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" },
-        { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
-        { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" },
-        { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
-        { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" },
-        { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
-        { fase: "Oitavas", jogo: 89, t1: "V74", t2: "V77" }, { fase: "Oitavas", jogo: 90, t1: "V73", t2: "V75" },
-        { fase: "Oitavas", jogo: 91, t1: "V76", t2: "V78" }, { fase: "Oitavas", jogo: 92, t1: "V79", t2: "V80" },
-        { fase: "Oitavas", jogo: 93, t1: "V83", t2: "V84" }, { fase: "Oitavas", jogo: 94, t1: "V81", t2: "V82" },
-        { fase: "Oitavas", jogo: 95, t1: "V86", t2: "V88" }, { fase: "Oitavas", jogo: 96, t1: "V85", t2: "V87" },
-        { fase: "Quartas", jogo: 97, t1: "V89", t2: "V90" }, { fase: "Quartas", jogo: 98, t1: "V93", t2: "V94" },
-        { fase: "Quartas", jogo: 99, t1: "V91", t2: "V92" }, { fase: "Quartas", jogo: 100, t1: "V95", t2: "V96" },
-        { fase: "Semifinal", jogo: 101, t1: "V97", t2: "V98" }, { fase: "Semifinal", jogo: 102, t1: "V99", t2: "V100" },
-        { fase: "3º Lugar", jogo: 103, t1: "Perdedor J101", t2: "Perdedor J102" },
-        { fase: "Final", jogo: 104, t1: "Vencedor J101", t2: "Vencedor J102" }
-    ];
-    mataMata.forEach(m => jogos.push({ id: m.jogo, fase: m.fase, grupo: "", time1: m.t1, time2: m.t2 }));
+    { fase: "16 avos", jogo: 73, t1: "2A", t2: "2B" },
+    { fase: "16 avos", jogo: 74, t1: "1E", t2: "3A/B/C/D/F" },
+    { fase: "16 avos", jogo: 75, t1: "1F", t2: "2C" },
+    { fase: "16 avos", jogo: 76, t1: "1C", t2: "2F" },
+    { fase: "16 avos", jogo: 77, t1: "1I", t2: "3C/D/F/G/H" },
+    { fase: "16 avos", jogo: 78, t1: "2E", t2: "2I" },
+    { fase: "16 avos", jogo: 79, t1: "1A", t2: "3C/E/F/H/I" },
+    { fase: "16 avos", jogo: 80, t1: "1L", t2: "3E/H/I/J/K" },
+    { fase: "16 avos", jogo: 81, t1: "1D", t2: "3B/E/F/I/J" },
+    { fase: "16 avos", jogo: 82, t1: "1G", t2: "3A/E/H/I/J" },
+    { fase: "16 avos", jogo: 83, t1: "2K", t2: "2L" },
+    { fase: "16 avos", jogo: 84, t1: "1H", t2: "2J" },
+    { fase: "16 avos", jogo: 85, t1: "1B", t2: "3E/F/G/I/J" },
+    { fase: "16 avos", jogo: 86, t1: "1J", t2: "2H" },
+    { fase: "16 avos", jogo: 87, t1: "1K", t2: "3D/E/I/J/L" },
+    { fase: "16 avos", jogo: 88, t1: "2D", t2: "2G" },
+    { fase: "Oitavas", jogo: 89, t1: "V74", t2: "V77" },
+    { fase: "Oitavas", jogo: 90, t1: "V73", t2: "V75" },
+    { fase: "Oitavas", jogo: 91, t1: "V76", t2: "V78" },
+    { fase: "Oitavas", jogo: 92, t1: "V79", t2: "V80" },
+    { fase: "Oitavas", jogo: 93, t1: "V83", t2: "V84" },
+    { fase: "Oitavas", jogo: 94, t1: "V81", t2: "V82" },
+    { fase: "Oitavas", jogo: 95, t1: "V86", t2: "V88" },
+    { fase: "Oitavas", jogo: 96, t1: "V85", t2: "V87" },
+    { fase: "Quartas", jogo: 97, t1: "V89", t2: "V90" },
+    { fase: "Quartas", jogo: 98, t1: "V93", t2: "V94" },
+    { fase: "Quartas", jogo: 99, t1: "V91", t2: "V92" },
+    { fase: "Quartas", jogo: 100, t1: "V95", t2: "V96" },
+    { fase: "Semifinal", jogo: 101, t1: "V97", t2: "V98" },
+    { fase: "Semifinal", jogo: 102, t1: "V99", t2: "V100" },
+    { fase: "3º Lugar", jogo: 103, t1: "Perdedor J101", t2: "Perdedor J102" },
+    { fase: "Final", jogo: 104, t1: "Vencedor J101", t2: "Vencedor J102" }
+];
+
+mataMata.forEach(m => jogos.push({ id: m.jogo, fase: m.fase, grupo: "", time1: m.t1, time2: m.t2 }));
+
+let nomesReaisMataMata = {
+    73: { t1: "África do Sul", t2: "Canadá" },
+    74: { t1: "Alemanha", t2: "Paraguai" },
+    75: { t1: "Holanda", t2: "Marrocos" },
+    76: { t1: "Brasil", t2: "Japão" },
+    77: { t1: "França", t2: "Suécia" },
+    78: { t1: "Costa do Marfim", t2: "Noruega" },
+    79: { t1: "México", t2: "Equador" },
+    80: { t1: "Inglaterra", t2: "RD Congo" },
+    81: { t1: "Estados Unidos", t2: "Bósnia-Herzegovina" },
+    82: { t1: "Bélgica", t2: "Senegal" },
+    83: { t1: "Portugal", t2: "Croácia" },
+    84: { t1: "Espanha", t2: "Áustria" },
+    85: { t1: "Suíça", t2: "Argélia" },
+    86: { t1: "Argentina", t2: "Cabo Verde" },
+    87: { t1: "Colômbia", t2: "Gana" },
+    88: { t1: "Austrália", t2: "Egito" }
+};
+// Jogos de oitavas em diante ainda dependem dos resultados, então permanecem como placeholders.
+
 
     // ==================== ESTADO GLOBAL ====================
     let resultadosAtuais = {};
@@ -1000,6 +1030,7 @@ async function apiPost(url, data) {
     let senhasParticipantes = {};
     let usuarioLogado = null;
     let estatisticasOficiaisCache = {};
+    let nomesEditando = {};  // buffer para inputs não salvos
 
     // ==================== FUNÇÕES AUXILIARES ====================
     function resultadoTexto(golsT1, golsT2) {
@@ -1011,21 +1042,22 @@ async function apiPost(url, data) {
         const res = resultadosAtuais[id];
         return res && typeof res.golsT1 === 'number' && typeof res.golsT2 === 'number';
     }
-    function getResultadoDisplay(jogo, placarStr) {
+    function getResultadoDisplay(time1, time2, placarStr) {
         if (!placarStr) return '';
         const partes = placarStr.split('-');
         if (partes.length !== 2) return '';
         const gT1 = parseInt(partes[0]), gT2 = parseInt(partes[1]);
         if (isNaN(gT1) || isNaN(gT2)) return '';
-        if (gT1 > gT2) return `${flag(jogo.time1)} ${jogo.time1}`;
-        if (gT1 < gT2) return `${flag(jogo.time2)} ${jogo.time2}`;
+        if (gT1 > gT2) return `${flag(time1)} ${time1}`;
+        if (gT1 < gT2) return `${flag(time2)} ${time2}`;
         return 'Empate';
-    }
+}
     function atualizarBotoesAdmin() {
         const isAdmin = (usuarioLogado === "David");
         document.getElementById('btn-forcar-salvar').style.display = isAdmin ? 'inline-block' : 'none';
         document.getElementById('btn-forcar-classificacao').style.display = isAdmin ? 'inline-block' : 'none';
         document.getElementById('sub-validar-li').style.display = isAdmin ? 'list-item' : 'none';
+        document.getElementById('btn-salvar-nomes').style.display = isAdmin ? 'inline-block' : 'none';
     }
 
     function vencedorReal(jogoId) {
@@ -1177,6 +1209,7 @@ async function apiPost(url, data) {
     }
 
     function atualizarJogosMataMataComResultadosReais() {
+        return;
         const todosGruposFinalizados = jogos
             .filter(j => j.fase === "Fase de Grupos")
             .every(j => jogoPossuiResultadoOficial(j.id));
@@ -1511,17 +1544,19 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
     const casaVence = bet.resultado === 'Casa' || (bet.resultado === 'Empate' && bet.penaltis === 'Casa');
     const foraVence = bet.resultado === 'Fora' || (bet.resultado === 'Empate' && bet.penaltis === 'Fora');
 
-    // Resultado real
+    // Resultado real (CORRIGIDO)
     const resReal = resultadosAtuais[jogo.id];
     let realHtml = '';
     if (resReal && typeof resReal.golsT1 === 'number' && typeof resReal.golsT2 === 'number') {
         const placarReal = `${resReal.golsT1}-${resReal.golsT2}`;
+        const time1Nome = (nomesReaisMataMata[jogo.id]?.t1) || jogo.time1;
+        const time2Nome = (nomesReaisMataMata[jogo.id]?.t2) || jogo.time2;
         let resultadoTextoReal = '';
-        if (resReal.golsT1 > resReal.golsT2) resultadoTextoReal = `Vitória ${jogo.time1}`;
-        else if (resReal.golsT1 < resReal.golsT2) resultadoTextoReal = `Vitória ${jogo.time2}`;
+        if (resReal.golsT1 > resReal.golsT2) resultadoTextoReal = `Vitória ${time1Nome}`;
+        else if (resReal.golsT1 < resReal.golsT2) resultadoTextoReal = `Vitória ${time2Nome}`;
         else {
             if (resReal.penaltis) {
-                resultadoTextoReal = `Empate (pênaltis: ${resReal.penaltis === 'Casa' ? jogo.time1 : jogo.time2})`;
+                resultadoTextoReal = `Empate (pênaltis: ${resReal.penaltis === 'Casa' ? time1Nome : time2Nome})`;
             } else {
                 resultadoTextoReal = 'Empate';
             }
@@ -1532,8 +1567,23 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
     }
 
     // ---- Cálculo de pontos ----
-    let pontosHtml = '<span class="text-muted">—</span>';
-    if (resReal && bet && bet.placar && bet.resultado) {
+let pontosHtml = '<span class="text-muted">—</span>';
+if (resReal && bet && bet.placar && bet.resultado) {
+    // Verifica se ao menos um time apostado está no jogo real (mata-mata)
+    let exibePontos = true;
+    if (jogo.fase !== 'Fase de Grupos') {
+        // Obtém os nomes reais dos times (placeholders ou nomes fixos)
+        const t1Real = nomesReaisMataMata[jogo.id]?.t1 || jogo.time1;
+        const t2Real = nomesReaisMataMata[jogo.id]?.t2 || jogo.time2;
+        const t1Aposta = resolverTimeRaw(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const t2Aposta = resolverTimeRaw(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        // Verifica se pelo menos um dos times apostados está entre os reais
+        const algumMatch = (t1Aposta === t1Real || t1Aposta === t2Real ||
+                            t2Aposta === t1Real || t2Aposta === t2Real);
+        if (!algumMatch) exibePontos = false;
+    }
+
+    if (exibePontos) {
         const acertouPlacar = (bet.placar === `${resReal.golsT1}-${resReal.golsT2}`);
         const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
                                 bet.resultado === 'Fora' ? 'Fora' :
@@ -1546,7 +1596,10 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         } else {
             pontosHtml = `<span style="color:#dc3545;">0</span>`;
         }
+    } else {
+        pontosHtml = `<span style="color:#dc3545;">0</span>`;
     }
+}
 
     tr.innerHTML = `
         <td style="color:#888;font-size:0.8rem;">${jogo.id}</td>
@@ -1781,12 +1834,17 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
     const resReal = resultadosAtuais[jogo.id];
     if (resReal && typeof resReal.golsT1 === 'number' && typeof resReal.golsT2 === 'number') {
         const placarReal = `${resReal.golsT1}-${resReal.golsT2}`;
+        
+        // Obtém os nomes reais (se existirem) para exibir corretamente
+        const time1Nome = (nomesReaisMataMata[jogo.id]?.t1) || jogo.time1;
+        const time2Nome = (nomesReaisMataMata[jogo.id]?.t2) || jogo.time2;
+        
         let resultadoTextoReal = '';
-        if (resReal.golsT1 > resReal.golsT2) resultadoTextoReal = `Vitória ${jogo.time1}`;
-        else if (resReal.golsT1 < resReal.golsT2) resultadoTextoReal = `Vitória ${jogo.time2}`;
+        if (resReal.golsT1 > resReal.golsT2) resultadoTextoReal = `Vitória ${time1Nome}`;
+        else if (resReal.golsT1 < resReal.golsT2) resultadoTextoReal = `Vitória ${time2Nome}`;
         else {
             if (resReal.penaltis) {
-                resultadoTextoReal = `Empate (pênaltis: ${resReal.penaltis === 'Casa' ? jogo.time1 : jogo.time2})`;
+                resultadoTextoReal = `Empate (pênaltis: ${resReal.penaltis === 'Casa' ? time1Nome : time2Nome})`;
             } else {
                 resultadoTextoReal = 'Empate';
             }
@@ -1797,8 +1855,24 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
     }
 
     // ---- Cálculo de pontos ----
-    let pontosHtml = '<span class="text-muted">—</span>';
-    if (resReal && bet && bet.placar && bet.resultado) {
+let pontosHtml = '<span class="text-muted">—</span>';
+if (resReal && bet && bet.placar && bet.resultado) {
+    // Verifica se ao menos um time apostado está no jogo real (mata-mata)
+    let exibePontos = true;
+    if (jogo.fase !== 'Fase de Grupos') {
+        // Obtém os nomes reais dos times (placeholders ou nomes fixos)
+        const t1Real = nomesReaisMataMata[jogo.id]?.t1 || jogo.time1;
+        const t2Real = nomesReaisMataMata[jogo.id]?.t2 || jogo.time2;
+         // Resolve os placeholders da aposta do usuário usando os palpites dele
+        const t1Aposta = resolverTimeRaw(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        const t2Aposta = resolverTimeRaw(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
+        // Verifica se pelo menos um dos times apostados está entre os reais
+        const algumMatch = (t1Aposta === t1Real || t1Aposta === t2Real ||
+                            t2Aposta === t1Real || t2Aposta === t2Real);
+        if (!algumMatch) exibePontos = false;
+    }
+
+    if (exibePontos) {
         const acertouPlacar = (bet.placar === `${resReal.golsT1}-${resReal.golsT2}`);
         const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
                                 bet.resultado === 'Fora' ? 'Fora' :
@@ -1811,7 +1885,10 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         } else {
             pontosHtml = `<span style="color:#dc3545;">0</span>`;
         }
+    } else {
+        pontosHtml = `<span style="color:#dc3545;">0</span>`;
     }
+}
 
     tr.innerHTML = `
         <td>${jogo.id}</td>
@@ -2324,51 +2401,82 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         101: "14/07", 102: "15/07", 103: "18/07", 104: "19/07"
     };
 
-    function renderizarTabelaJogos() {
-        const isAdmin = (usuarioLogado === 'David');
-        const isKnockout = fase => fase !== 'Fase de Grupos';
-        let html = `<table class="table table-striped table-hover" id="tabela-jogos">
-            <thead><tr><th>#</th><th>Data</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th>${isAdmin ? '<th>Pênaltis (mata-mata)</th>' : ''}<th>Resultado</th></tr></thead><tbody>`;
-        jogos.forEach(jogo => {
-            const temResultado = jogoPossuiResultadoOficial(jogo.id);
-            const res = resultadosAtuais[jogo.id];
-            const placarOficial = temResultado ? `${res.golsT1}-${res.golsT2}` : '';
-            const penaltisOficial = temResultado ? (res.penaltis || '') : '';
-            const resultadoDisplay = getResultadoDisplay(jogo, placarOficial);
-            const data = datasJogos[jogo.id] || '';
+   function renderizarTabelaJogos() {
+    const isAdmin = (usuarioLogado === 'David');
+    const isKnockout = fase => fase !== 'Fase de Grupos';
 
-            let placarCell, penaltisCell = '', resultadoCell;
-
-            if (isAdmin && temResultado) {
-                placarCell = `<span class="placar-salvo">${placarOficial}</span> <button class="btn btn-sm btn-outline-secondary py-0 px-1" style="font-size:0.7rem;" onclick="limparResultado(${jogo.id})" title="Editar resultado">✏️</button>`;
-                if (isAdmin) penaltisCell = penaltisOficial ? `<span class="text-muted small">${penaltisOficial}</span>` : '<span class="text-muted small">—</span>';
-                resultadoCell = `<strong>${resultadoDisplay}</strong>`;
-            } else if (isAdmin && !temResultado) {
-                placarCell = `<input type="text" class="form-control form-control-sm placar-input" data-jogo-id="${jogo.id}" placeholder="2-1" style="width:72px;display:inline-block;">`;
-                if (isAdmin && isKnockout(jogo.fase)) {
-                    penaltisCell = `<select class="form-select form-select-sm penaltis-select" data-jogo-id="${jogo.id}" style="width:90px;display:inline-block;">
-                        <option value="">—</option>
-                        <option value="Casa">${jogo.time1 && jogo.time1.length < 10 ? jogo.time1 : 'Time 1'}</option>
-                        <option value="Fora">${jogo.time2 && jogo.time2.length < 10 ? jogo.time2 : 'Time 2'}</option>
-                    </select>`;
-                } else if (isAdmin) {
-                    penaltisCell = '—';
-                }
-                resultadoCell = '';
-            } else {
-                placarCell = placarOficial || '<span class="text-muted">—</span>';
-                resultadoCell = placarOficial ? `<strong>${resultadoDisplay}</strong>` : '';
-            }
-
-            html += `<tr class="${temResultado ? 'jogo-travado' : ''}">
-                <td>${jogo.id}</td><td><strong>${data}</strong></td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
-                <td>${flag(jogo.time1)} ${jogo.time1}</td><td>${flag(jogo.time2)} ${jogo.time2}</td>
-                <td class="placar-cell">${placarCell}</td>${isAdmin ? `<td class="penaltis-cell">${penaltisCell}</td>` : ''}
-                <td class="resultado-cell">${resultadoCell}</td></tr>`;
+    // 1. Se for admin, salva os valores atuais dos inputs antes de destruir a tabela
+    let valoresInputs = {};
+    if (isAdmin) {
+        const inputsAtuais = document.querySelectorAll('#tabela-jogos input[data-jogo-id]');
+        inputsAtuais.forEach(input => {
+            const id = input.dataset.jogoId;
+            const time = input.dataset.time;
+            if (!valoresInputs[id]) valoresInputs[id] = {};
+            valoresInputs[id][time] = input.value;
         });
-        html += '</tbody></table>';
-        document.getElementById('jogos-container').innerHTML = html;
     }
+
+    let html = `<table class="table table-striped table-hover" id="tabela-jogos">
+        <thead><tr><th>#</th><th>Data</th><th>Fase</th><th>Grupo</th><th>Time 1</th><th>Time 2</th><th>Placar</th>${isAdmin ? '<th>Pênaltis (mata-mata)</th>' : ''}<th>Resultado</th></tr></thead><tbody>`;
+
+    jogos.forEach(jogo => {
+        const temResultado = jogoPossuiResultadoOficial(jogo.id);
+        const res = resultadosAtuais[jogo.id];
+        const placarOficial = temResultado ? `${res.golsT1}-${res.golsT2}` : '';
+        const penaltisOficial = temResultado ? (res.penaltis || '') : '';
+        const data = datasJogos[jogo.id] || '';
+
+        // Define os nomes de exibição (reais ou placeholders)
+        let displayTime1 = jogo.time1;
+        let displayTime2 = jogo.time2;
+        if (nomesReaisMataMata[jogo.id]) {
+            displayTime1 = nomesReaisMataMata[jogo.id].t1 || jogo.time1;
+            displayTime2 = nomesReaisMataMata[jogo.id].t2 || jogo.time2;
+        }
+
+        // Se for admin, usa os valores salvos (para não perder edições durante o polling)
+        if (isAdmin && valoresInputs[jogo.id]) {
+            if (valoresInputs[jogo.id].t1) displayTime1 = valoresInputs[jogo.id].t1;
+            if (valoresInputs[jogo.id].t2) displayTime2 = valoresInputs[jogo.id].t2;
+        }
+
+        const resultadoDisplay = getResultadoDisplay(displayTime1, displayTime2, placarOficial);
+
+        let placarCell, penaltisCell = '', resultadoCell;
+
+        if (isAdmin && temResultado) {
+            placarCell = `<span class="placar-salvo">${placarOficial}</span> <button class="btn btn-sm btn-outline-secondary py-0 px-1" style="font-size:0.7rem;" onclick="limparResultado(${jogo.id})" title="Editar resultado">✏️</button>`;
+            if (isAdmin) penaltisCell = penaltisOficial ? `<span class="text-muted small">${penaltisOficial}</span>` : '<span class="text-muted small">—</span>';
+            resultadoCell = `<strong>${resultadoDisplay}</strong>`;
+        } else if (isAdmin && !temResultado) {
+            placarCell = `<input type="text" class="form-control form-control-sm placar-input" data-jogo-id="${jogo.id}" placeholder="2-1" style="width:72px;display:inline-block;">`;
+            if (isAdmin && isKnockout(jogo.fase)) {
+                penaltisCell = `<select class="form-select form-select-sm penaltis-select" data-jogo-id="${jogo.id}" style="width:90px;display:inline-block;">
+                    <option value="">—</option>
+                    <option value="Casa">${displayTime1 && displayTime1.length < 10 ? displayTime1 : 'Time 1'}</option>
+                    <option value="Fora">${displayTime2 && displayTime2.length < 10 ? displayTime2 : 'Time 2'}</option>
+                </select>`;
+            } else if (isAdmin) {
+                penaltisCell = '—';
+            }
+            resultadoCell = '';
+        } else {
+            placarCell = placarOficial || '<span class="text-muted">—</span>';
+            resultadoCell = placarOficial ? `<strong>${resultadoDisplay}</strong>` : '';
+        }
+
+        html += `<tr class="${temResultado ? 'jogo-travado' : ''}">
+            <td>${jogo.id}</td><td><strong>${data}</strong></td><td>${jogo.fase}</td><td>${jogo.grupo}</td>
+            <td>${flag(displayTime1)} ${isAdmin ? `<input type="text" class="form-control form-control-sm d-inline-block nome-time-input" style="width:110px;" value="${displayTime1.replace(/"/g, '&quot;')}" data-jogo-id="${jogo.id}" data-time="t1">` : displayTime1}</td>
+            <td>${flag(displayTime2)} ${isAdmin ? `<input type="text" class="form-control form-control-sm d-inline-block nome-time-input" style="width:110px;" value="${displayTime2.replace(/"/g, '&quot;')}" data-jogo-id="${jogo.id}" data-time="t2">` : displayTime2}</td>
+            <td class="placar-cell">${placarCell}</td>${isAdmin ? `<td class="penaltis-cell">${penaltisCell}</td>` : ''}
+            <td class="resultado-cell">${resultadoCell}</td></tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('jogos-container').innerHTML = html;
+}
 
     function atualizarTudo() {
         renderizarTabelaJogos();
@@ -2591,6 +2699,34 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         }, 200);
     }
 
+    async function salvarNomesReais() {
+    if (usuarioLogado !== "David") return;
+    const inputs = document.querySelectorAll('#tabela-jogos input.nome-time-input');
+    const batch = db.batch();
+    const novosNomes = {};
+
+    inputs.forEach(input => {
+        const jogoId = parseInt(input.dataset.jogoId);
+        const time = input.dataset.time;
+        const valor = input.value.trim();
+        if (!novosNomes[jogoId]) novosNomes[jogoId] = {};
+        novosNomes[jogoId][time] = valor;
+    });
+
+    for (const [jogoId, nomes] of Object.entries(novosNomes)) {
+        const ref = db.collection('confrontosReais').doc(jogoId.toString());
+        batch.set(ref, { t1: nomes.t1 || '', t2: nomes.t2 || '' }, { merge: true });
+    }
+
+    await batch.commit();
+    // Atualiza a variável global com os novos nomes
+    for (const [jogoId, nomes] of Object.entries(novosNomes)) {
+        if (!nomesReaisMataMata[jogoId]) nomesReaisMataMata[jogoId] = {};
+        nomesReaisMataMata[jogoId] = nomes;
+    }
+    mostrarToastNoTopo('Nomes atualizados com sucesso!');
+}
+
     window.addEventListener('DOMContentLoaded', async () => {
         const selectLogin = document.getElementById('login-participante');
         selectLogin.innerHTML = '<option value="">-- Selecione --</option>';
@@ -2601,6 +2737,40 @@ function criarLinhaJogoVisualizar(jogo, bets, classificacao, statsGrupos, atribu
         });
 
         await carregarSenhas();
+// ⬇️ carregamento dos nomes reais
+const padrao = {
+    73: { t1: "África do Sul", t2: "Canadá" },
+    74: { t1: "Alemanha", t2: "Paraguai" },
+    75: { t1: "Holanda", t2: "Marrocos" },
+    76: { t1: "Brasil", t2: "Japão" },
+    77: { t1: "França", t2: "Suécia" },
+    78: { t1: "Costa do Marfim", t2: "Noruega" },
+    79: { t1: "México", t2: "Equador" },
+    80: { t1: "Inglaterra", t2: "RD Congo" },
+    81: { t1: "Estados Unidos", t2: "Bósnia-Herzegovina" },
+    82: { t1: "Bélgica", t2: "Senegal" },
+    83: { t1: "Portugal", t2: "Croácia" },
+    84: { t1: "Espanha", t2: "Áustria" },
+    85: { t1: "Suíça", t2: "Argélia" },
+    86: { t1: "Argentina", t2: "Cabo Verde" },
+    87: { t1: "Colômbia", t2: "Gana" },
+    88: { t1: "Austrália", t2: "Egito" }
+};
+
+try {
+    const snap = await db.collection('confrontosReais').get();
+    snap.forEach(doc => {
+        const d = doc.data();
+        if (d.t1 || d.t2) {
+            padrao[doc.id] = { t1: d.t1 || '', t2: d.t2 || '' };
+        }
+    });
+} catch (e) {
+    console.error('Erro ao carregar nomes reais:', e);
+}
+
+nomesReaisMataMata = padrao;
+        
         configurarListeners();
 
         setTimeout(() => {
