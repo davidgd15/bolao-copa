@@ -1583,48 +1583,21 @@ if (resReal && bet && bet.placar && bet.resultado) {
         if (!algumMatch) exibePontos = false;
     }
 
-        if (exibePontos) {
+    if (exibePontos) {
         const acertouPlacar = (bet.placar === `${resReal.golsT1}-${resReal.golsT2}`);
-
-        // Determina quantos times da aposta coincidem com os reais
-        const t1Real = nomesReaisMataMata[jogo.id]?.t1 || jogo.time1;
-        const t2Real = nomesReaisMataMata[jogo.id]?.t2 || jogo.time2;
-        const t1Aposta = resolverTimeRaw(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-        const t2Aposta = resolverTimeRaw(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-        const match1 = (t1Aposta === t1Real || t1Aposta === t2Real);
-        const match2 = (t2Aposta === t1Real || t2Aposta === t2Real);
-        const numMatches = (match1 ? 1 : 0) + (match2 ? 1 : 0);
-
-        let acertouResultado = false;
-        if (numMatches === 2) {
-            // Acertou os dois times → regra normal
-            const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
-                                    bet.resultado === 'Fora' ? 'Fora' :
-                                    (bet.penaltis || 'Empate');
-            const vencedorRealJogo = vencedorReal(jogo.id);
-            acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
-        } else if (numMatches === 1) {
-            // Só acertou um time → só pontua se esse time for o vencedor real
-            const timeComum = match1 ? t1Aposta : t2Aposta;
-            const vencedorRealJogo = vencedorReal(jogo.id);
-            let vencedorRealNome = null;
-            if (vencedorRealJogo === 'Casa') vencedorRealNome = t1Real;
-            else if (vencedorRealJogo === 'Fora') vencedorRealNome = t2Real;
-            else if (vencedorRealJogo === 'Empate') {
-                // empate – ninguém ganha ponto extra com apenas 1 match
-                vencedorRealNome = null;
-            }
-            if (vencedorRealNome && timeComum === vencedorRealNome) {
-                acertouResultado = true;
-            }
-        }
-
+        const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
+                                bet.resultado === 'Fora' ? 'Fora' :
+                                (bet.penaltis || 'Empate');
+        const vencedorRealJogo = vencedorReal(jogo.id);
+        const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
         const pontos = (acertouPlacar ? 3 : 0) + (acertouResultado ? 1 : 0);
         if (pontos > 0) {
             pontosHtml = `<span style="font-weight:bold; color:#28a745;">+${pontos}</span>`;
         } else {
             pontosHtml = `<span style="color:#dc3545;">0</span>`;
         }
+    } else {
+        pontosHtml = `<span style="color:#dc3545;">0</span>`;
     }
 }
 
@@ -1899,48 +1872,21 @@ if (resReal && bet && bet.placar && bet.resultado) {
         if (!algumMatch) exibePontos = false;
     }
 
-        if (exibePontos) {
+    if (exibePontos) {
         const acertouPlacar = (bet.placar === `${resReal.golsT1}-${resReal.golsT2}`);
-
-        // Determina quantos times da aposta coincidem com os reais
-        const t1Real = nomesReaisMataMata[jogo.id]?.t1 || jogo.time1;
-        const t2Real = nomesReaisMataMata[jogo.id]?.t2 || jogo.time2;
-        const t1Aposta = resolverTimeRaw(jogo.time1, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-        const t2Aposta = resolverTimeRaw(jogo.time2, classificacao, statsGrupos, bets, atribuicaoTerceiros);
-        const match1 = (t1Aposta === t1Real || t1Aposta === t2Real);
-        const match2 = (t2Aposta === t1Real || t2Aposta === t2Real);
-        const numMatches = (match1 ? 1 : 0) + (match2 ? 1 : 0);
-
-        let acertouResultado = false;
-        if (numMatches === 2) {
-            // Acertou os dois times → regra normal
-            const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
-                                    bet.resultado === 'Fora' ? 'Fora' :
-                                    (bet.penaltis || 'Empate');
-            const vencedorRealJogo = vencedorReal(jogo.id);
-            acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
-        } else if (numMatches === 1) {
-            // Só acertou um time → só pontua se esse time for o vencedor real
-            const timeComum = match1 ? t1Aposta : t2Aposta;
-            const vencedorRealJogo = vencedorReal(jogo.id);
-            let vencedorRealNome = null;
-            if (vencedorRealJogo === 'Casa') vencedorRealNome = t1Real;
-            else if (vencedorRealJogo === 'Fora') vencedorRealNome = t2Real;
-            else if (vencedorRealJogo === 'Empate') {
-                // empate – ninguém ganha ponto extra com apenas 1 match
-                vencedorRealNome = null;
-            }
-            if (vencedorRealNome && timeComum === vencedorRealNome) {
-                acertouResultado = true;
-            }
-        }
-
+        const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
+                                bet.resultado === 'Fora' ? 'Fora' :
+                                (bet.penaltis || 'Empate');
+        const vencedorRealJogo = vencedorReal(jogo.id);
+        const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
         const pontos = (acertouPlacar ? 3 : 0) + (acertouResultado ? 1 : 0);
         if (pontos > 0) {
             pontosHtml = `<span style="font-weight:bold; color:#28a745;">+${pontos}</span>`;
         } else {
             pontosHtml = `<span style="color:#dc3545;">0</span>`;
         }
+    } else {
+        pontosHtml = `<span style="color:#dc3545;">0</span>`;
     }
 }
 
@@ -2156,165 +2102,143 @@ if (resReal && bet && bet.placar && bet.resultado) {
         }
     }
 
-        // ==================== CLASSIFICAÇÃO ====================
-        function renderizarClassificacao() {
-            apiGet('/api/estatisticas-oficiais').then(oficial => {
-                estatisticasOficiaisCache = oficial || {};
-                calcularEExibir(estatisticasOficiaisCache);
-            }).catch(() => calcularEExibir(estatisticasOficiaisCache || {}));
+    // ==================== CLASSIFICAÇÃO ====================
+    function renderizarClassificacao() {
+        apiGet('/api/estatisticas-oficiais').then(oficial => {
+            estatisticasOficiaisCache = oficial || {};
+            calcularEExibir(estatisticasOficiaisCache);
+        }).catch(() => calcularEExibir(estatisticasOficiaisCache || {}));
 
-            function calcularEExibir(oficial) {
-        // Build a "bets" object from official results so we can reuse bracket-resolution functions
-        const betsOficiais = {};
-        for (const j of jogos) {
-            const res = resultadosAtuais[j.id];
-            if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
-            betsOficiais[j.id] = {
-                placar: `${res.golsT1}-${res.golsT2}`,
-                resultado: resultadoTexto(res.golsT1, res.golsT2),
-                penaltis: res.penaltis || null,
-                salvo: true
-            };
-        }
-        const classOficial = calcularGrupos(betsOficiais);
-        const statsGruposOficial = calcularEstatisticasGrupos(betsOficiais);
-        const tercOficial = atribuirTerceiros(statsGruposOficial);
-
-        const preClassificacao = participantes.map(nome => {
-            let pontosPlacar = 0, pontosResultado = 0, pontosExtras = 0;
-            const bets = apostasAtuais[nome] || {};
-
-            const classPalpite = calcularGrupos(bets);
-            const statsPalpite = calcularEstatisticasGrupos(bets);
-            const tercPalpite = atribuirTerceiros(statsPalpite);
-
-            for (const jogo of jogos) {
-                const res = resultadosAtuais[jogo.id];
+        function calcularEExibir(oficial) {
+            // Build a "bets" object from official results so we can reuse bracket-resolution functions
+            const betsOficiais = {};
+            for (const j of jogos) {
+                const res = resultadosAtuais[j.id];
                 if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
-                const bet = bets[jogo.id];
-                if (!bet || !bet.placar || !bet.resultado) continue;
+                betsOficiais[j.id] = {
+                    placar: `${res.golsT1}-${res.golsT2}`,
+                    resultado: resultadoTexto(res.golsT1, res.golsT2),
+                    penaltis: res.penaltis || null,
+                    salvo: true
+                };
+            }
+            const classOficial = calcularGrupos(betsOficiais);
+            const statsGruposOficial = calcularEstatisticasGrupos(betsOficiais);
+            const tercOficial = atribuirTerceiros(statsGruposOficial);
 
-                if (jogo.fase !== 'Fase de Grupos') {
-                    const t1Of = resolverTimeRaw(jogo.time1, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
-                    const t2Of = resolverTimeRaw(jogo.time2, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
-                    const t1Pa = resolverTimeRaw(jogo.time1, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
-                    const t2Pa = resolverTimeRaw(jogo.time2, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
+            const preClassificacao = participantes.map(nome => {
+                let pontosPlacar = 0, pontosResultado = 0, pontosExtras = 0;
+                const bets = apostasAtuais[nome] || {};
 
-                    const isRealTeam = t => t && t.length > 2 && !/^\d[a-z]$/i.test(t) && !/^v\d+$/i.test(t) && !/^3[a-z/]+$/i.test(t) && !/^(vencedor|perdedor)/i.test(t);
-                    const timesOficiais = [t1Of, t2Of].filter(isRealTeam);
-                    const timesPalpite = [t1Pa, t2Pa].filter(isRealTeam);
+                // Build participant bracket for knockout team resolution
+                const classPalpite = calcularGrupos(bets);
+                const statsPalpite = calcularEstatisticasGrupos(bets);
+                const tercPalpite = atribuirTerceiros(statsPalpite);
 
-                    if (timesOficiais.length > 0 && timesPalpite.length > 0) {
-                        const algumMatch = timesPalpite.some(t => timesOficiais.includes(t));
-                        if (!algumMatch) continue;
-                    }
+                for (const jogo of jogos) {
+                    const res = resultadosAtuais[jogo.id];
+                    if (!res || typeof res.golsT1 !== 'number' || typeof res.golsT2 !== 'number') continue;
+                    const bet = bets[jogo.id];
+                    if (!bet || !bet.placar || !bet.resultado) continue;
 
-                    const match1 = (t1Pa === t1Of || t1Pa === t2Of);
-                    const match2 = (t2Pa === t1Of || t2Pa === t2Of);
-                    const numMatches = (match1 ? 1 : 0) + (match2 ? 1 : 0);
+                    // REGRA MATA-MATA: após fase de grupos, só pontua se ao menos 1 time apostado jogou de fato aquela partida
+                    if (jogo.fase !== 'Fase de Grupos') {
+                        const t1Of = resolverTimeRaw(jogo.time1, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
+                        const t2Of = resolverTimeRaw(jogo.time2, classOficial, statsGruposOficial, betsOficiais, tercOficial).toLowerCase();
+                        const t1Pa = resolverTimeRaw(jogo.time1, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
+                        const t2Pa = resolverTimeRaw(jogo.time2, classPalpite, statsPalpite, bets, tercPalpite).toLowerCase();
 
-                    if (numMatches === 2) {
-                        const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
-                        const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
-                                                bet.resultado === 'Fora' ? 'Fora' :
-                                                (bet.penaltis || 'Empate');
-                        const vencedorRealJogo = vencedorReal(jogo.id);
-                        const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
-                        if (acertouPlacar) pontosPlacar += 3;
-                        if (acertouResultado) pontosResultado += 1;
-                    } else if (numMatches === 1) {
-                        const timeComum = match1 ? t1Pa : t2Pa;
-                        const vencedorRealJogo = vencedorReal(jogo.id);
-                        let vencedorRealNome = null;
-                        if (vencedorRealJogo === 'Casa') vencedorRealNome = t1Of;
-                        else if (vencedorRealJogo === 'Fora') vencedorRealNome = t2Of;
-                        if (vencedorRealNome && timeComum === vencedorRealNome) {
-                            pontosResultado += 1;
+                        // A resolved team name is not a placeholder (1A, V74, 3A/B, Vencedor J101, etc.)
+                        const isRealTeam = t => t && t.length > 2 && !/^\d[a-z]$/i.test(t) && !/^v\d+$/i.test(t) && !/^3[a-z/]+$/i.test(t) && !/^(vencedor|perdedor)/i.test(t);
+                        const timesOficiais = [t1Of, t2Of].filter(isRealTeam);
+                        const timesPalpite = [t1Pa, t2Pa].filter(isRealTeam);
+
+                        if (timesOficiais.length > 0 && timesPalpite.length > 0) {
+                            const algumMatch = timesPalpite.some(t => timesOficiais.includes(t));
+                            if (!algumMatch) continue; // Nenhum time apostado jogou essa partida — sem pontos
                         }
                     }
-                    // numMatches == 0 → continua sem pontos
-                } else {
-                    // Fase de grupos (regra normal)
+
                     const acertouPlacar = (bet.placar === `${res.golsT1}-${res.golsT2}`);
                     const vencedorPalpite = bet.resultado === 'Casa' ? 'Casa' :
                                             bet.resultado === 'Fora' ? 'Fora' :
-                                            (bet.penaltis || 'Empate');
+                                            bet.resultado === 'Empate' ? (bet.penaltis || 'Empate') :
+                                            null;
                     const vencedorRealJogo = vencedorReal(jogo.id);
                     const acertouResultado = (vencedorPalpite && vencedorRealJogo && vencedorPalpite === vencedorRealJogo);
                     if (acertouPlacar) pontosPlacar += 3;
                     if (acertouResultado) pontosResultado += 1;
                 }
-            }
 
-            // REGRA CAMPEÃO (inalterada)
-            const finalOficial = resultadosAtuais[104];
-            if (finalOficial && typeof finalOficial.golsT1 === 'number' && typeof finalOficial.golsT2 === 'number') {
-                const vencJogo104Of = vencedorJogo(104, betsOficiais);
-                const vencJogo104Pa = vencedorJogo(104, bets);
-                if (vencJogo104Of && vencJogo104Pa) {
-                    const campeaoOficial = resolverTimeRaw(vencJogo104Of, classOficial, statsGruposOficial, betsOficiais, tercOficial);
-                    const campeaoPalpite = resolverTimeRaw(vencJogo104Pa, classPalpite, statsPalpite, bets, tercPalpite);
-                    if (campeaoOficial && campeaoPalpite &&
-                        campeaoOficial.toLowerCase() === campeaoPalpite.toLowerCase()) {
-                        pontosExtras += 20;
+                // REGRA CAMPEÃO: +20 pontos se acertou o vencedor da Final (jogo 104)
+                const finalOficial = resultadosAtuais[104];
+                if (finalOficial && typeof finalOficial.golsT1 === 'number' && typeof finalOficial.golsT2 === 'number') {
+                    const vencJogo104Of = vencedorJogo(104, betsOficiais);
+                    const vencJogo104Pa = vencedorJogo(104, bets);
+                    if (vencJogo104Of && vencJogo104Pa) {
+                        const campeaoOficial = resolverTimeRaw(vencJogo104Of, classOficial, statsGruposOficial, betsOficiais, tercOficial);
+                        const campeaoPalpite = resolverTimeRaw(vencJogo104Pa, classPalpite, statsPalpite, bets, tercPalpite);
+                        if (campeaoOficial && campeaoPalpite &&
+                            campeaoOficial.toLowerCase() === campeaoPalpite.toLowerCase()) {
+                            pontosExtras += 20;
+                        }
                     }
+                }
+
+                const est = bets.estatisticas || {};
+                if (oficial.artilheiro && est.artilheiro && est.artilheiro.toLowerCase() === oficial.artilheiro.toLowerCase()) pontosExtras += 20;
+                if (oficial.assistencias && est.assistencias && est.assistencias.toLowerCase() === oficial.assistencias.toLowerCase()) pontosExtras += 15;
+                if (oficial.cartaoVermelho && est.cartaoVermelho && est.cartaoVermelho.toLowerCase() === oficial.cartaoVermelho.toLowerCase()) pontosExtras += 15;
+                if (oficial.selecaoCartoes && est.selecaoCartoes && est.selecaoCartoes.toLowerCase() === oficial.selecaoCartoes.toLowerCase()) pontosExtras += 10;
+                if (oficial.selecaoEscanteios && est.selecaoEscanteios && est.selecaoEscanteios.toLowerCase() === oficial.selecaoEscanteios.toLowerCase()) pontosExtras += 10;
+                if (oficial.selecaoGols && est.selecaoGols && est.selecaoGols.toLowerCase() === oficial.selecaoGols.toLowerCase()) pontosExtras += 10;
+
+                return { nome, pontosPlacar, pontosResultado, pontosExtras, total: pontosPlacar + pontosResultado + pontosExtras, est };
+            });
+
+            let menorDiferenca = Infinity;
+            const diferencas = [];
+
+            if (oficial.totalGols) {
+                const oficialNum = parseInt(oficial.totalGols);
+                if (!isNaN(oficialNum)) {
+                    preClassificacao.forEach(item => {
+                        const aposta = item.est.totalGols;
+                        if (aposta && !isNaN(parseInt(aposta))) {
+                            const apostaNum = parseInt(aposta);
+                            const diff = Math.abs(oficialNum - apostaNum);
+                            diferencas.push({ nome: item.nome, diff });
+                            if (diff < menorDiferenca) menorDiferenca = diff;
+                        }
+                    });
                 }
             }
 
-            // Estatísticas extras (inalterado)
-            const est = bets.estatisticas || {};
-            if (oficial.artilheiro && est.artilheiro && est.artilheiro.toLowerCase() === oficial.artilheiro.toLowerCase()) pontosExtras += 20;
-            if (oficial.assistencias && est.assistencias && est.assistencias.toLowerCase() === oficial.assistencias.toLowerCase()) pontosExtras += 15;
-            if (oficial.cartaoVermelho && est.cartaoVermelho && est.cartaoVermelho.toLowerCase() === oficial.cartaoVermelho.toLowerCase()) pontosExtras += 15;
-            if (oficial.selecaoCartoes && est.selecaoCartoes && est.selecaoCartoes.toLowerCase() === oficial.selecaoCartoes.toLowerCase()) pontosExtras += 10;
-            if (oficial.selecaoEscanteios && est.selecaoEscanteios && est.selecaoEscanteios.toLowerCase() === oficial.selecaoEscanteios.toLowerCase()) pontosExtras += 10;
-            if (oficial.selecaoGols && est.selecaoGols && est.selecaoGols.toLowerCase() === oficial.selecaoGols.toLowerCase()) pontosExtras += 10;
-
-            return { nome, pontosPlacar, pontosResultado, pontosExtras, total: pontosPlacar + pontosResultado + pontosExtras, est };
-        });
-
-        // Cálculo do total de gols (inalterado)
-        let menorDiferenca = Infinity;
-        const diferencas = [];
-        if (oficial.totalGols) {
-            const oficialNum = parseInt(oficial.totalGols);
-            if (!isNaN(oficialNum)) {
+            if (menorDiferenca < Infinity) {
+                const vencedores = diferencas.filter(d => d.diff === menorDiferenca).map(d => d.nome);
                 preClassificacao.forEach(item => {
-                    const aposta = item.est.totalGols;
-                    if (aposta && !isNaN(parseInt(aposta))) {
-                        const apostaNum = parseInt(aposta);
-                        const diff = Math.abs(oficialNum - apostaNum);
-                        diferencas.push({ nome: item.nome, diff });
-                        if (diff < menorDiferenca) menorDiferenca = diff;
+                    if (vencedores.includes(item.nome)) {
+                        item.pontosExtras += 20;
+                        item.total = item.pontosPlacar + item.pontosResultado + item.pontosExtras;
                     }
                 });
             }
-        }
-        if (menorDiferenca < Infinity) {
-            const vencedores = diferencas.filter(d => d.diff === menorDiferenca).map(d => d.nome);
-            preClassificacao.forEach(item => {
-                if (vencedores.includes(item.nome)) {
-                    item.pontosExtras += 20;
-                    item.total = item.pontosPlacar + item.pontosResultado + item.pontosExtras;
-                }
+
+            preClassificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
+            let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
+                <thead><tr><th>Posição</th><th>Participante</th><th>Pts Placar (3)</th><th>Pts Resultado (1)</th><th>Pts Extras</th><th>TOTAL</th></tr></thead><tbody>`;
+            preClassificacao.forEach((item, index) => {
+                let classe = '';
+                if (index === 0) classe = 'ranking-ouro';
+                else if (index === 1) classe = 'ranking-prata';
+                else if (index === 2) classe = 'ranking-bronze';
+                html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td>${item.pontosPlacar}</td><td>${item.pontosResultado}</td><td>${item.pontosExtras}</td><td><strong>${item.total}</strong></td></tr>`;
             });
+            html += '</tbody></table>';
+            document.getElementById('classificacao-container').innerHTML = html;
+
+            salvarPontuacaoNoBD(preClassificacao);
         }
-
-        preClassificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
-        let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
-            <thead><tr><th>Posição</th><th>Participante</th><th>Pts Placar (3)</th><th>Pts Resultado (1)</th><th>Pts Extras</th><th>TOTAL</th></tr></thead><tbody>`;
-        preClassificacao.forEach((item, index) => {
-            let classe = '';
-            if (index === 0) classe = 'ranking-ouro';
-            else if (index === 1) classe = 'ranking-prata';
-            else if (index === 2) classe = 'ranking-bronze';
-            html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td>${item.pontosPlacar}</td><td>${item.pontosResultado}</td><td>${item.pontosExtras}</td><td><strong>${item.total}</strong></td></tr>`;
-        });
-        html += '</tbody></table>';
-        document.getElementById('classificacao-container').innerHTML = html;
-
-        salvarPontuacaoNoBD(preClassificacao);
-    }
     }
 
     // ==================== MODAL DE PÊNALTIS ====================
