@@ -1925,46 +1925,57 @@ let nomesReaisMataMata = {
 
     //====================================================================
     function calcularPontosJogo(bet, resultadoReal, t1Real, t2Real, t1Palpite, t2Palpite, fase) {
-    if (!bet || !bet.placar || !bet.resultado) return 0;
+        if (!bet || !bet.placar || !bet.resultado) return 0;
 
-    // --- FASE DE GRUPOS (regra original) ---
-    if (fase === 'Fase de Grupos') {
         const golsReal = resultadoReal.golsT1 + '-' + resultadoReal.golsT2;
         const acertouPlacar = (bet.placar === golsReal);
-        const acertouResultado = (bet.resultado === resultadoTexto(resultadoReal.golsT1, resultadoReal.golsT2));
-        if (!acertouResultado) return 0;
-        let pontos = 1;                          // acertou o resultado
-        if (acertouPlacar) pontos += 3;          // acertou o placar exato → total 4
-        return pontos;
-    }
 
-    // --- MATA-MATA (nova regra encadeada) ---
-    // 1. Determina quem passou (vencedor)
-    let vencedorReal = '';
-    if (resultadoReal.golsT1 > resultadoReal.golsT2) vencedorReal = 'Casa';
-    else if (resultadoReal.golsT1 < resultadoReal.golsT2) vencedorReal = 'Fora';
-    else {
-        if (resultadoReal.penaltis) vencedorReal = resultadoReal.penaltis;
-        else vencedorReal = 'Empate';
-    }
-
-    if (vencedorReal === 'Empate' || bet.resultado !== vencedorReal) return 0;
-
-    let pontos = 1; // acertou quem passou
-
-    // 2. Acertou o placar?
-    const golsReal = resultadoReal.golsT1 + '-' + resultadoReal.golsT2;
-    const acertouPlacar = (bet.placar === golsReal);
-    if (acertouPlacar) {
-        pontos += 1; // total 2
-        // 3. Acertou quem perdeu (times exatos)?
-        const acertouPerdedor = (t1Palpite === t1Real && t2Palpite === t2Real);
-        if (acertouPerdedor) {
-            pontos += 2; // total 4
+        // --- FASE DE GRUPOS (regra antiga) ---
+        if (fase === 'Fase de Grupos') {
+            const resultadoRealTexto = resultadoTexto(resultadoReal.golsT1, resultadoReal.golsT2);
+            const acertouResultado = (bet.resultado === resultadoRealTexto);
+            if (!acertouResultado) return 0;
+            return 1 + (acertouPlacar ? 3 : 0);  // 1 pelo resultado, +3 se acertar placar
         }
-    }
 
-    return pontos;
+        // --- MATA-MATA ---
+        // 1. Determinar o time vencedor REAL (nome)
+        let vencedorRealNome = null;
+        if (resultadoReal.golsT1 > resultadoReal.golsT2) vencedorRealNome = t1Real;
+        else if (resultadoReal.golsT1 < resultadoReal.golsT2) vencedorRealNome = t2Real;
+        else {
+            // empate: ver nos pênaltis
+            if (resultadoReal.penaltis === 'Casa') vencedorRealNome = t1Real;
+            else if (resultadoReal.penaltis === 'Fora') vencedorRealNome = t2Real;
+        }
+        if (!vencedorRealNome) return 0;  // sem vencedor definido
+
+        // 2. Determinar o time vencedor PREVISTO (nome)
+        let vencedorPalpiteNome = null;
+        if (bet.resultado === 'Casa') vencedorPalpiteNome = t1Palpite;
+        else if (bet.resultado === 'Fora') vencedorPalpiteNome = t2Palpite;
+        else if (bet.resultado === 'Empate') {
+            if (bet.penaltis === 'Casa') vencedorPalpiteNome = t1Palpite;
+            else if (bet.penaltis === 'Fora') vencedorPalpiteNome = t2Palpite;
+        }
+        if (!vencedorPalpiteNome) return 0;
+
+        // 3. Comparar nomes (case‑insensitive)
+        if (vencedorPalpiteNome.toLowerCase() !== vencedorRealNome.toLowerCase()) return 0;
+
+        // Acertou quem passou → 1 ponto
+        let pontos = 1;
+
+        // 4. Placar exato?
+        if (acertouPlacar) {
+            pontos += 1;                     // +1 (total 2)
+            // 5. Acertou também o perdedor? (times exatos)
+            if (t1Palpite === t1Real && t2Palpite === t2Real) {
+                pontos += 2;                 // +2 (total 4)
+            }
+        }
+
+        return pontos;
 }
 
     // ==================== ESTATÍSTICAS DOS USUÁRIOS ====================
@@ -2128,7 +2139,7 @@ let nomesReaisMataMata = {
     }
 
     // ==================== CLASSIFICAÇÃO ====================
-        function renderizarClassificacao() {
+function renderizarClassificacao() {
     apiGet('/api/estatisticas-oficiais').then(oficial => {
         estatisticasOficiaisCache = oficial || {};
         calcularEExibir(estatisticasOficiaisCache);
@@ -2151,7 +2162,8 @@ let nomesReaisMataMata = {
         const tercOficial = atribuirTerceiros(statsGruposOficial);
 
         const preClassificacao = participantes.map(nome => {
-            let pontosTotal = 0;
+            let pontosResultado = 0;
+            let pontosPlacar = 0;
             let pontosExtras = 0;
             const bets = apostasAtuais[nome] || {};
             const classPalpite = calcularGrupos(bets);
@@ -2164,16 +2176,58 @@ let nomesReaisMataMata = {
                 const bet = bets[jogo.id];
                 if (!bet || !bet.placar || !bet.resultado) continue;
 
-                // Times reais do jogo (resolvidos)
                 const t1Real = (nomesReaisMataMata[jogo.id]?.t1) || jogo.time1;
                 const t2Real = (nomesReaisMataMata[jogo.id]?.t2) || jogo.time2;
-
-                // Times do palpite (resolvidos)
                 const t1Pa = resolverTimeRaw(jogo.time1, classPalpite, statsPalpite, bets, tercPalpite);
                 const t2Pa = resolverTimeRaw(jogo.time2, classPalpite, statsPalpite, bets, tercPalpite);
 
-                // Calcula pontos do jogo usando a nova regra
-                pontosTotal += calcularPontosJogo(bet, res, t1Real, t2Real, t1Pa, t2Pa, jogo.fase);
+                const golsReal = res.golsT1 + '-' + res.golsT2;
+                const acertouPlacar = (bet.placar === golsReal);
+                const resultadoReal = resultadoTexto(res.golsT1, res.golsT2);
+                const acertouResultado = (bet.resultado === resultadoReal);
+
+                if (jogo.fase === 'Fase de Grupos') {
+                    if (acertouResultado) {
+                        pontosResultado += 1;
+                        if (acertouPlacar) pontosPlacar += 3;
+                    }
+                } else {
+                    // --- MATA-MATA: comparação por nomes ---
+                    // Vencedor real
+                    let vencedorRealNome = null;
+                    if (res.golsT1 > res.golsT2) vencedorRealNome = t1Real;
+                    else if (res.golsT1 < res.golsT2) vencedorRealNome = t2Real;
+                    else {
+                        if (res.penaltis === 'Casa') vencedorRealNome = t1Real;
+                        else if (res.penaltis === 'Fora') vencedorRealNome = t2Real;
+                    }
+                    if (!vencedorRealNome) continue;
+                
+                    // Vencedor previsto
+                    let vencedorPalpiteNome = null;
+                    if (bet.resultado === 'Casa') vencedorPalpiteNome = t1Pa;
+                    else if (bet.resultado === 'Fora') vencedorPalpiteNome = t2Pa;
+                    else if (bet.resultado === 'Empate') {
+                        if (bet.penaltis === 'Casa') vencedorPalpiteNome = t1Pa;
+                        else if (bet.penaltis === 'Fora') vencedorPalpiteNome = t2Pa;
+                    }
+                    if (!vencedorPalpiteNome) continue;
+                
+                    // Comparação case‑insensitive
+                    if (vencedorPalpiteNome.toLowerCase() !== vencedorRealNome.toLowerCase()) continue;
+                
+                    // Acertou quem passou → 1 ponto
+                    pontosResultado += 1;
+                
+                    // Placar
+                    if (acertouPlacar) {
+                        pontosPlacar += 1;               // +1 pelo placar
+                        // Times exatos (acertou também o perdedor)
+                        if (t1Pa === t1Real && t2Pa === t2Real) {
+                            pontosPlacar += 2;           // +2 = total 3 no placar
+                        }
+                    }
+                }
             }
 
             // Campeão (20 pts)
@@ -2199,8 +2253,7 @@ let nomesReaisMataMata = {
             if (oficial.selecaoEscanteios && est.selecaoEscanteios && est.selecaoEscanteios.toLowerCase() === oficial.selecaoEscanteios.toLowerCase()) pontosExtras += 10;
             if (oficial.selecaoGols && est.selecaoGols && est.selecaoGols.toLowerCase() === oficial.selecaoGols.toLowerCase()) pontosExtras += 10;
 
-            // Total de gols (20 pts) – lógica de menor diferença já existente
-            return { nome, pontosTotal, pontosExtras, est };
+            return { nome, pontosPlacar, pontosResultado, pontosExtras, total: pontosPlacar + pontosResultado + pontosExtras, est };
         });
 
         // Total de gols
@@ -2225,25 +2278,22 @@ let nomesReaisMataMata = {
             preClassificacao.forEach(item => {
                 if (vencedores.includes(item.nome)) {
                     item.pontosExtras += 20;
+                    item.total = item.pontosPlacar + item.pontosResultado + item.pontosExtras;
                 }
             });
         }
 
-        // Calcula o total final e ordena
-        preClassificacao.forEach(item => {
-            item.total = item.pontosTotal + item.pontosExtras;
-        });
-        preClassificacao.sort((a, b) => b.total - a.total);
+        preClassificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
 
-        // Monta a tabela
+        // Tabela com as colunas detalhadas
         let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
-            <thead><tr><th>Posição</th><th>Participante</th><th>Pontos</th></tr></thead><tbody>`;
+            <thead><tr><th>Posição</th><th>Participante</th><th>Pts Placar</th><th>Pts Resultado</th><th>Pts Extras</th><th>TOTAL</th></tr></thead><tbody>`;
         preClassificacao.forEach((item, index) => {
             let classe = '';
             if (index === 0) classe = 'ranking-ouro';
             else if (index === 1) classe = 'ranking-prata';
             else if (index === 2) classe = 'ranking-bronze';
-            html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td><strong>${item.total}</strong></td></tr>`;
+            html += `<tr class="${classe}"><td>${index + 1}º</td><td>${item.nome}</td><td>${item.pontosPlacar}</td><td>${item.pontosResultado}</td><td>${item.pontosExtras}</td><td><strong>${item.total}</strong></td></tr>`;
         });
         html += '</tbody></table>';
         document.getElementById('classificacao-container').innerHTML = html;
