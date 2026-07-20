@@ -2161,6 +2161,19 @@ function renderizarClassificacao() {
         const statsGruposOficial = calcularEstatisticasGrupos(betsOficiais);
         const tercOficial = atribuirTerceiros(statsGruposOficial);
 
+        // Função auxiliar para comparação flexível
+        function verificarAcerto(palpite, oficialStr) {
+            if (!palpite || !oficialStr) return false;
+            const palpiteLimpo = palpite.trim().toLowerCase();
+            const oficiais = oficialStr.split(',').map(s => s.trim().toLowerCase());
+            return oficiais.some(of => {
+                if (of === palpiteLimpo) return true;
+                if (of.includes(palpiteLimpo)) return true;
+                if (palpiteLimpo.includes(of)) return true;
+                return false;
+            });
+        }
+
         const preClassificacao = participantes.map(nome => {
             let pontosResultado = 0;
             let pontosPlacar = 0;
@@ -2192,8 +2205,6 @@ function renderizarClassificacao() {
                         if (acertouPlacar) pontosPlacar += 3;
                     }
                 } else {
-                    // --- MATA-MATA: comparação por nomes ---
-                    // Vencedor real
                     let vencedorRealNome = null;
                     if (res.golsT1 > res.golsT2) vencedorRealNome = t1Real;
                     else if (res.golsT1 < res.golsT2) vencedorRealNome = t2Real;
@@ -2202,8 +2213,7 @@ function renderizarClassificacao() {
                         else if (res.penaltis === 'Fora') vencedorRealNome = t2Real;
                     }
                     if (!vencedorRealNome) continue;
-                
-                    // Vencedor previsto
+
                     let vencedorPalpiteNome = null;
                     if (bet.resultado === 'Casa') vencedorPalpiteNome = t1Pa;
                     else if (bet.resultado === 'Fora') vencedorPalpiteNome = t2Pa;
@@ -2212,25 +2222,20 @@ function renderizarClassificacao() {
                         else if (bet.penaltis === 'Fora') vencedorPalpiteNome = t2Pa;
                     }
                     if (!vencedorPalpiteNome) continue;
-                
-                    // Comparação case‑insensitive
-                    if (vencedorPalpiteNome.toLowerCase() !== vencedorRealNome.toLowerCase()) continue;
-                
-                    // Acertou quem passou → 1 ponto
-                    pontosResultado += 1;
-                
-                    // Placar
-                    if (acertouPlacar) {
-                        pontosPlacar += 1;               // +1 pelo placar
-                        // Times exatos (acertou também o perdedor)
-                        if (t1Pa === t1Real && t2Pa === t2Real) {
-                            pontosPlacar += 2;           // +2 = total 3 no placar
+
+                    if (vencedorPalpiteNome.toLowerCase() === vencedorRealNome.toLowerCase()) {
+                        pontosResultado += 1;
+                        if (acertouPlacar) {
+                            pontosPlacar += 1;
+                            if (t1Pa === t1Real && t2Pa === t2Real) {
+                                pontosPlacar += 2;
+                            }
                         }
                     }
                 }
             }
 
-            // Campeão (20 pts)
+            // Campeão
             const finalOficial = resultadosAtuais[104];
             if (finalOficial && typeof finalOficial.golsT1 === 'number' && typeof finalOficial.golsT2 === 'number') {
                 const vencJogo104Of = vencedorJogo(104, betsOficiais);
@@ -2244,19 +2249,19 @@ function renderizarClassificacao() {
                 }
             }
 
-            // Estatísticas
+            // Estatísticas com verificação flexível
             const est = bets.estatisticas || {};
-            if (oficial.artilheiro && est.artilheiro && est.artilheiro.toLowerCase() === oficial.artilheiro.toLowerCase()) pontosExtras += 20;
-            if (oficial.assistencias && est.assistencias && est.assistencias.toLowerCase() === oficial.assistencias.toLowerCase()) pontosExtras += 15;
-            if (oficial.cartaoVermelho && est.cartaoVermelho && est.cartaoVermelho.toLowerCase() === oficial.cartaoVermelho.toLowerCase()) pontosExtras += 15;
-            if (oficial.selecaoCartoes && est.selecaoCartoes && est.selecaoCartoes.toLowerCase() === oficial.selecaoCartoes.toLowerCase()) pontosExtras += 10;
-            if (oficial.selecaoEscanteios && est.selecaoEscanteios && est.selecaoEscanteios.toLowerCase() === oficial.selecaoEscanteios.toLowerCase()) pontosExtras += 10;
-            if (oficial.selecaoGols && est.selecaoGols && est.selecaoGols.toLowerCase() === oficial.selecaoGols.toLowerCase()) pontosExtras += 10;
+            if (verificarAcerto(est.artilheiro, oficial.artilheiro)) pontosExtras += 20;
+            if (verificarAcerto(est.assistencias, oficial.assistencias)) pontosExtras += 15;
+            if (verificarAcerto(est.cartaoVermelho, oficial.cartaoVermelho)) pontosExtras += 15;
+            if (verificarAcerto(est.selecaoCartoes, oficial.selecaoCartoes)) pontosExtras += 10;
+            if (verificarAcerto(est.selecaoEscanteios, oficial.selecaoEscanteios)) pontosExtras += 10;
+            if (verificarAcerto(est.selecaoGols, oficial.selecaoGols)) pontosExtras += 10;
 
             return { nome, pontosPlacar, pontosResultado, pontosExtras, total: pontosPlacar + pontosResultado + pontosExtras, est };
         });
 
-        // Total de gols
+        // Total de gols (mantido)
         let menorDiferenca = Infinity;
         const diferencas = [];
         if (oficial.totalGols) {
@@ -2285,7 +2290,6 @@ function renderizarClassificacao() {
 
         preClassificacao.sort((a, b) => b.total - a.total || b.pontosPlacar - a.pontosPlacar);
 
-        // Tabela com as colunas detalhadas
         let html = `<table class="table table-striped table-hover" id="tabela-classificacao">
             <thead><tr><th>Posição</th><th>Participante</th><th>Pts Placar</th><th>Pts Resultado</th><th>Pts Extras</th><th>TOTAL</th></tr></thead><tbody>`;
         preClassificacao.forEach((item, index) => {
